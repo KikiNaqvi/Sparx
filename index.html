@@ -20,101 +20,111 @@
 
     .container {
       text-align: center;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 30px;
+      background: rgba(0, 0, 50, 0.85);
+      padding: 40px;
       border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0, 195, 255, 0.3);
-      backdrop-filter: blur(10px);
-      width: 90%;
-      max-width: 400px;
+      box-shadow: 0 0 30px #00ffee;
+      max-width: 90%;
+      width: 400px;
     }
 
     h1 {
-      font-size: 1.8em;
-      margin-bottom: 20px;
-      color: #00ffff;
-      text-shadow: 0 0 5px #00ffff;
+      font-size: 2em;
+      margin-bottom: 10px;
     }
 
-    input[type="text"] {
+    input {
       padding: 12px;
-      width: 80%;
-      margin-bottom: 20px;
+      width: 90%;
       border: none;
-      border-radius: 10px;
-      font-size: 1em;
-      text-align: center;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-top: 15px;
       outline: none;
     }
 
     button {
-      padding: 12px 25px;
-      font-size: 1em;
-      font-weight: bold;
-      color: #fff;
-      background: linear-gradient(90deg, #007BFF, #00FFFF);
+      margin-top: 20px;
+      padding: 12px 30px;
+      background: linear-gradient(45deg, #00ffee, #00ccff);
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #000;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 10px #00ffff80;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
     button:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 20px #00ffffcc;
+      box-shadow: 0 0 15px #00ffff;
     }
 
-    #feedbackMsg {
+    .message {
       margin-top: 20px;
-      font-size: 0.9em;
+      font-weight: bold;
+    }
+
+    .sparkle {
+      animation: sparkle 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes sparkle {
+      0% { text-shadow: 0 0 5px #0ff, 0 0 10px #0ff; }
+      100% { text-shadow: 0 0 15px #0ff, 0 0 30px #0ff; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Download Sparx Cheats</h1>
-    <form id="cheatForm" method="POST" action="https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec">
-      <input type="text" name="username" id="username" placeholder="Enter your name" required>
+    <h1 class="sparkle">✨ Sparx Cheats Portal ✨</h1>
+    <p>Enter your name to unlock cheat mode:</p>
+    <form id="cheatForm">
+      <input type="text" name="username" id="username" placeholder="e.g. KiyanTheLegend" required>
       <input type="hidden" name="device" id="device">
-      <button type="submit">Download</button>
+      <button type="submit">Activate</button>
     </form>
-    <div id="feedbackMsg"></div>
+    <div class="message" id="feedbackMsg"></div>
   </div>
 
   <script>
-    document.getElementById('device').value = navigator.userAgent;
-
     const form = document.getElementById('cheatForm');
     const msg = document.getElementById('feedbackMsg');
+    const deviceInput = document.getElementById('device');
+    deviceInput.value = navigator.userAgent;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
+      const data = new URLSearchParams();
+      for (const pair of formData) {
+        data.append(pair[0], pair[1]);
+      }
 
       try {
-        const res = await fetch(form.action, {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec", {
           method: 'POST',
-          body: formData,
+          body: data
         });
 
         if (res.ok) {
-          msg.textContent = "✅ Cheat access granted!";
+          msg.textContent = "✅ Name received! Downloading your cheat now...";
           msg.style.color = "#00ffcc";
-
-          // Start file download
-          const link = document.createElement('a');
-          link.href = "SparxStuff.zip"; // Place this file next to your HTML!
-          link.download = "SparxStuff.zip";
-          link.click();
-
           form.reset();
+
+          const downloadLink = document.createElement('a');
+          downloadLink.href = 'SparxStuff.zip'; // Ensure this file is hosted alongside the HTML
+          downloadLink.download = 'SparxStuff.zip';
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
         } else {
-          msg.textContent = "⚠️ Failed to submit.";
+          msg.textContent = "⚠️ Something went wrong. Try again!";
           msg.style.color = "#ff6666";
         }
-      } catch (err) {
-        msg.textContent = "⚠️ Error sending. Check your internet!";
+      } catch (error) {
+        msg.textContent = "⚠️ Error sending your name. Check your internet or gremlins.";
         msg.style.color = "#ff6666";
       }
     });
