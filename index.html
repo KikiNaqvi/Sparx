@@ -89,45 +89,67 @@
   </div>
 
   <script>
-    const form = document.getElementById('cheatForm');
-    const msg = document.getElementById('feedbackMsg');
-    const deviceInput = document.getElementById('device');
-    deviceInput.value = navigator.userAgent;
+  const form = document.getElementById('cheatForm');
+  const msg = document.getElementById('feedbackMsg');
+  const deviceInput = document.getElementById('device');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const data = new URLSearchParams();
-      for (const pair of formData) {
-        data.append(pair[0], pair[1]);
-      }
+  function getFriendlyDevice() {
+    const ua = navigator.userAgent;
 
-      try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec", {
-          method: 'POST',
-          body: data
-        });
+    if (/iPhone/i.test(ua)) {
+      return "iPhone";
+    } else if (/iPad/i.test(ua)) {
+      return "iPad";
+    } else if (/Macintosh/i.test(ua)) {
+      return "MacBook";
+    } else if (/Android/i.test(ua)) {
+      if (/Samsung/i.test(ua)) return "Samsung Galaxy";
+      return "Android Phone";
+    } else if (/Windows/i.test(ua)) {
+      return "Windows PC";
+    } else if (/Linux/i.test(ua)) {
+      return "Linux Machine";
+    } else {
+      return "Unknown Device";
+    }
+  }
 
-        if (res.ok) {
-          msg.textContent = "✅ Name received! Downloading your cheat now...";
-          msg.style.color = "#00ffcc";
-          form.reset();
+  deviceInput.value = getFriendlyDevice();
 
-          const downloadLink = document.createElement('a');
-          downloadLink.href = 'SparxStuff.zip'; // Ensure this file is hosted alongside the HTML
-          downloadLink.download = 'SparxStuff.zip';
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
-        } else {
-          msg.textContent = "⚠️ Something went wrong. Try again!";
-          msg.style.color = "#ff6666";
-        }
-      } catch (error) {
-        msg.textContent = "⚠️ Error sending your name. Check your internet or gremlins.";
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const data = new URLSearchParams();
+    for (const pair of formData) {
+      data.append(pair[0], pair[1]);
+    }
+
+    try {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec", {
+        method: 'POST',
+        body: data
+      });
+
+      if (res.ok) {
+        msg.textContent = "✅ Name received! Downloading your cheat now...";
+        msg.style.color = "#00ffcc";
+        form.reset();
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = 'SparxStuff.zip';
+        downloadLink.download = 'SparxStuff.zip';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      } else {
+        msg.textContent = "⚠️ Something went wrong. Try again!";
         msg.style.color = "#ff6666";
       }
-    });
+    } catch (error) {
+      msg.textContent = "⚠️ Error sending your name. Check your internet or gremlins.";
+      msg.style.color = "#ff6666";
+    }
+  });
   </script>
 </body>
 </html>
