@@ -253,60 +253,92 @@
       <div class="msg" id="msgMod"></div>
     </form>
   </div>
-
   <script>
-    const testerForm = document.getElementById('testerForm');
-    const modForm = document.getElementById('modForm');
-    const msgTester = document.getElementById('msgTester');
-    const msgMod = document.getElementById('msgMod');
-    const scriptURL = "https://script.google.com/macros/s/AKfycby_dhtlatHINH7Z6bW8HeBIthxZKpahTXryWI-fD0BtJNX6MOaSMPOsOWdlZRUvQR68oA/exec";
+  const testerForm = document.getElementById('testerForm');
+  const modForm = document.getElementById('modForm');
+  const msgTester = document.getElementById('msgTester');
+  const msgMod = document.getElementById('msgMod');
+  const scriptURL = "https://script.google.com/macros/s/AKfycby_dhtlatHINH7Z6bW8HeBIthxZKpahTXryWI-fD0BtJNX6MOaSMPOsOWdlZRUvQR68oA/exec";
 
-    function showForm(type) {
-      testerForm.style.display = 'none';
-      modForm.style.display = 'none';
-      (type === 'tester' ? testerForm : modForm).style.display = 'block';
-    }
+  // Show form based on role selection (Tester or Mod)
+  function showForm(type) {
+    testerForm.style.display = 'none';
+    modForm.style.display = 'none';
+    (type === 'tester' ? testerForm : modForm).style.display = 'block';
+  }
 
-    function handleChoices(form) {
-      const groups = form.querySelectorAll('.choice-group');
-      groups.forEach(group => {
-        const name = group.dataset.name;
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = name;
-        group.appendChild(hidden);
+  // Handle choices (Selecting answer in the form)
+  function handleChoices(form) {
+    const groups = form.querySelectorAll('.choice-group');
+    groups.forEach(group => {
+      const name = group.dataset.name;
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = name;
+      group.appendChild(hidden);
 
-        const choices = group.querySelectorAll('.choice');
-        choices.forEach(choice => {
-          choice.addEventListener('click', () => {
-            choices.forEach(c => c.classList.remove('selected'));
-            choice.classList.add('selected');
-            hidden.value = choice.textContent;
-          });
+      const choices = group.querySelectorAll('.choice');
+      choices.forEach(choice => {
+        choice.addEventListener('click', () => {
+          choices.forEach(c => c.classList.remove('selected'));
+          choice.classList.add('selected');
+          hidden.value = choice.textContent;
         });
       });
-    }
+    });
+  }
 
-    [testerForm, modForm].forEach(form => {
-      handleChoices(form);
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const data = new URLSearchParams();
-        for (const pair of formData) data.append(pair[0], pair[1]);
-        const msg = form === testerForm ? msgTester : msgMod;
+  // On form submission
+  [testerForm, modForm].forEach(form => {
+    handleChoices(form);
 
-        try {
-          const res = await fetch(scriptURL, { method: 'POST', body: data });
-          msg.textContent = res.ok ? "✅ Submitted!" : "⚠️ Something went wrong!";
-          msg.style.color = res.ok ? "#00ffcc" : "#ff6666";
-          if (res.ok) form.reset();
-        } catch (err) {
-          msg.textContent = "⚠️ Error sending data.";
-          msg.style.color = "#ff6666";
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = new URLSearchParams();
+      for (const pair of formData) data.append(pair[0], pair[1]);
+      const msg = form === testerForm ? msgTester : msgMod;
+
+      try {
+        const res = await fetch(scriptURL, { method: 'POST', body: data });
+        msg.textContent = res.ok ? "✅ Submitted!" : "⚠️ Something went wrong!";
+        msg.style.color = res.ok ? "#00ffcc" : "#ff6666";
+        if (res.ok) form.reset();
+      } catch (err) {
+        msg.textContent = "⚠️ Error sending data.";
+        msg.style.color = "#ff6666";
+      }
+    });
+  });
+
+  // New part to check if the name is already accepted and display relevant message
+  window.onload = () => {
+    const nameInput = document.querySelectorAll('input[name="name"]');
+
+    nameInput.forEach(input => {
+      input.addEventListener("blur", async () => {
+        const name = input.value.trim();
+        if (!name) return;
+
+        const response = await fetch(`https://script.google.com/macros/s/AKfycby_dhtlatHINH7Z6bW8HeBIthxZKpahTXryWI-fD0BtJNX6MOaSMPOsOWdlZRUvQR68oA/exec?name=${encodeURIComponent(name)}`);
+        const status = await response.text();
+
+        const parentForm = input.closest("form");
+        const msgBox = parentForm.querySelector(".msg");
+
+        if (status === "accepted") {
+          parentForm.style.display = "none";
+          msgBox.textContent = "🎉 You've already been accepted!";
+          msgBox.style.color = "#00ffcc";
+        } else if (status === "pending") {
+          msgBox.textContent = "⏳ Application is still being reviewed.";
+          msgBox.style.color = "#ffcc00";
+        } else {
+          msgBox.textContent = "";
         }
       });
     });
-  </script>
+  };
+</script>
 </body>
 </html>
