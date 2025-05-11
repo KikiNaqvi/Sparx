@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sparx Applications</title>
+  <title>Sparx Application</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -13,182 +13,168 @@
       color: #fff;
       display: flex;
       justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: auto;
-      padding: 40px 10px;
+      align-items: flex-start;
+      padding: 30px 10px;
     }
 
-    .container {
-      text-align: center;
+    .form-box {
       background: rgba(0, 0, 50, 0.85);
       padding: 30px;
       border-radius: 15px;
-      box-shadow: 0 0 30px #00ffee;
-      max-width: 600px;
+      box-shadow: 0 0 25px #00ffee;
+      max-width: 500px;
       width: 100%;
     }
 
     h1 {
-      font-size: 2em;
-      margin-bottom: 20px;
-      animation: sparkle 1.5s ease-in-out infinite alternate;
-    }
-
-    .role-buttons button {
-      margin: 10px;
-      padding: 12px 25px;
-      font-size: 16px;
-      background: linear-gradient(45deg, #00ffee, #00ccff);
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      color: #000;
-      font-weight: bold;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .role-buttons button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px #00ffff;
-    }
-
-    form {
-      display: none;
-      text-align: left;
-      margin-top: 20px;
+      font-size: 1.6em;
+      text-align: center;
+      margin-bottom: 10px;
     }
 
     label {
       display: block;
-      margin: 12px 0 6px;
+      margin: 15px 0 5px;
+      font-size: 0.9em;
     }
 
-    input, textarea {
+    input, select, textarea {
       width: 100%;
       padding: 10px;
       border: none;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 1em;
+      margin-top: 3px;
       outline: none;
     }
 
-    textarea {
-      resize: vertical;
-    }
-
-    .submit-btn {
+    button {
       margin-top: 20px;
+      padding: 12px;
+      width: 100%;
       background: linear-gradient(45deg, #00ffee, #00ccff);
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 1em;
       font-weight: bold;
       color: #000;
-      padding: 12px 30px;
       cursor: pointer;
     }
 
-    .submit-btn:hover {
-      transform: scale(1.05);
+    button:hover {
+      transform: scale(1.03);
       box-shadow: 0 0 15px #00ffff;
     }
 
-    .message {
+    .msg {
+      text-align: center;
       margin-top: 20px;
       font-weight: bold;
     }
 
-    @keyframes sparkle {
-      0% { text-shadow: 0 0 5px #0ff, 0 0 10px #0ff; }
-      100% { text-shadow: 0 0 15px #0ff, 0 0 30px #0ff; }
+    @media screen and (max-width: 480px) {
+      .form-box {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>✨ Sparx Application Portal ✨</h1>
-    <p>Choose your destiny:</p>
-    <div class="role-buttons">
-      <button onclick="showForm('mod')">Apply as Moderator</button>
-      <button onclick="showForm('tester')">Apply as Tester</button>
-    </div>
+  <form class="form-box" id="appForm">
+    <h1>🛠️ Apply for Sparx Team</h1>
 
-    <form id="applicationForm">
-      <input type="hidden" name="role" id="roleInput">
+    <label for="role">Applying as:</label>
+    <select name="role" id="role" required>
+      <option value="">Select...</option>
+      <option value="Moderator">Moderator</option>
+      <option value="Tester">Tester</option>
+    </select>
 
-      <label for="name">Your Name</label>
-      <input type="text" name="name" id="name" required>
+    <label for="name">Your Name:</label>
+    <input type="text" name="name" id="name" placeholder="e.g. Kiyan" required />
 
-      <div id="questions"></div>
+    <label>How active are you weekly?</label>
+    <select name="q1" required>
+      <option value="">Choose one...</option>
+      <option value="1-3 hours">1-3 hours</option>
+      <option value="3-6 hours">3-6 hours</option>
+      <option value="7+ hours">7+ hours</option>
+    </select>
 
-      <button type="submit" class="submit-btn">Submit Application</button>
-      <div class="message" id="msgBox"></div>
-    </form>
-  </div>
+    <label>Do you have Discord?</label>
+    <select name="q2" required>
+      <option value="">Select one</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+
+    <label>Can you follow instructions carefully?</label>
+    <select name="q3" required>
+      <option value="">Choose one...</option>
+      <option value="Yes">Yes</option>
+      <option value="Sometimes">Sometimes</option>
+      <option value="No">No</option>
+    </select>
+
+    <label>How good are you at spotting bugs/glitches?</label>
+    <select name="q4" required>
+      <option value="">Pick one</option>
+      <option value="Very Good">Very Good</option>
+      <option value="Decent">Decent</option>
+      <option value="Not Great">Not Great</option>
+    </select>
+
+    <label>Would you report bugs you find?</label>
+    <select name="q5" required>
+      <option value="">Absolutely?</option>
+      <option value="Yes">Yes</option>
+      <option value="If I remember">If I remember</option>
+      <option value="No">No</option>
+    </select>
+
+    <label>Are you okay with not leaking anything?</label>
+    <select name="q6" required>
+      <option value="">Select</option>
+      <option value="Yes, fully">Yes, fully</option>
+      <option value="Maybe">Maybe</option>
+    </select>
+
+    <label for="q7">Why do you want this role?</label>
+    <textarea name="q7" id="q7" rows="2" required></textarea>
+
+    <label for="q8">How would you react to a rule-breaker?</label>
+    <textarea name="q8" id="q8" rows="2" required></textarea>
+
+    <label for="q9">How can we trust you?</label>
+    <textarea name="q9" id="q9" rows="2" required></textarea>
+
+    <label for="q10">What's your favorite Sparx feature?</label>
+    <input type="text" name="q10" id="q10" />
+
+    <label for="q11">Are you familiar with how Sparx works?</label>
+    <select name="q11" required>
+      <option value="">Choose</option>
+      <option value="Yes">Yes</option>
+      <option value="Somewhat">Somewhat</option>
+      <option value="Not yet">Not yet</option>
+    </select>
+
+    <label for="q12">Anything else you wanna add?</label>
+    <textarea name="q12" id="q12" rows="2"></textarea>
+
+    <button type="submit">Submit Application</button>
+    <div class="msg" id="msgBox"></div>
+  </form>
 
   <script>
-    const form = document.getElementById('applicationForm');
-    const msgBox = document.getElementById('msgBox');
-    const questionsDiv = document.getElementById('questions');
-    const roleInput = document.getElementById('roleInput');
-
-    const questions = {
-      mod: [
-        "Why do you want to be a moderator?",
-        "How would you deal with a spammer?",
-        "What’s your timezone?",
-        "Have you ever moderated a server before?",
-        "How active can you be daily?",
-        "What would you do if two members are fighting?",
-        "Do you know how to use moderation bots?",
-        "How old are you?",
-        "What's your Discord tag?",
-        "What's a rule you'd add?",
-        "How would you welcome a new member?",
-        "Tell us a fun fact about yourself!"
-      ],
-      tester: [
-        "Why do you want to be a tester?",
-        "Do you have experience testing tools or scripts?",
-        "What's your device setup?",
-        "How often can you test?",
-        "Do you know how to report bugs clearly?",
-        "Have you tested cheats before?",
-        "Do you use screen recording?",
-        "How old are you?",
-        "What’s your favorite game?",
-        "Can you follow detailed instructions?",
-        "How do you handle broken scripts?",
-        "What would make you a great tester?"
-      ]
-    };
-
-    function showForm(role) {
-      form.style.display = 'block';
-      roleInput.value = role;
-      questionsDiv.innerHTML = '';
-
-      questions[role].forEach((q, i) => {
-        const label = document.createElement('label');
-        label.textContent = `${i + 1}. ${q}`;
-        const input = document.createElement('textarea');
-        input.name = `q${i + 1}`;
-        input.required = true;
-        questionsDiv.appendChild(label);
-        questionsDiv.appendChild(input);
-      });
-
-      window.scrollTo({ top: form.offsetTop, behavior: 'smooth' });
-    }
+    const form = document.getElementById('appForm');
+    const msg = document.getElementById('msgBox');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
       const data = new URLSearchParams();
-      for (const pair of formData) {
-        data.append(pair[0], pair[1]);
-      }
+      for (const pair of formData) data.append(pair[0], pair[1]);
 
       try {
         const res = await fetch("https://script.google.com/macros/s/AKfycby_dhtlatHINH7Z6bW8HeBIthxZKpahTXryWI-fD0BtJNX6MOaSMPOsOWdlZRUvQR68oA/exec", {
@@ -197,17 +183,16 @@
         });
 
         if (res.ok) {
-          msgBox.textContent = "✅ Application submitted! We'll review it soon!";
-          msgBox.style.color = "#00ffcc";
+          msg.textContent = "✅ Application sent!";
+          msg.style.color = "#00ffcc";
           form.reset();
-          form.style.display = "none";
         } else {
-          msgBox.textContent = "⚠️ Submission failed. Try again later!";
-          msgBox.style.color = "#ff6666";
+          msg.textContent = "⚠️ Something went wrong.";
+          msg.style.color = "#ff6666";
         }
       } catch (err) {
-        msgBox.textContent = "⚠️ Something went wrong. Internet goblins again?";
-        msgBox.style.color = "#ff6666";
+        msg.textContent = "⚠️ Failed to send. Check your net?";
+        msg.style.color = "#ff6666";
       }
     });
   </script>
