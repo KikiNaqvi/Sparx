@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sparx Applications</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(135deg, #0a2540, #1e90ff);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: auto;
+      padding: 40px 10px;
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(0, 0, 50, 0.85);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px #00ffee;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-bottom: 20px;
+      animation: sparkle 1.5s ease-in-out infinite alternate;
+    }
+
+    .role-buttons button {
+      margin: 10px;
+      padding: 12px 25px;
+      font-size: 16px;
+      background: linear-gradient(45deg, #00ffee, #00ccff);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #000;
+      font-weight: bold;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .role-buttons button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ffff;
+    }
+
+    form {
+      display: none;
+      text-align: left;
+      margin-top: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .submit-btn {
+      margin-top: 20px;
+      background: linear-gradient(45deg, #00ffee, #00ccff);
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #000;
+      padding: 12px 30px;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ffff;
+    }
+
+    .message {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    @keyframes sparkle {
+      0% { text-shadow: 0 0 5px #0ff, 0 0 10px #0ff; }
+      100% { text-shadow: 0 0 15px #0ff, 0 0 30px #0ff; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✨ Sparx Application Portal ✨</h1>
+    <p>Choose your destiny:</p>
+    <div class="role-buttons">
+      <button onclick="showForm('mod')">Apply as Moderator</button>
+      <button onclick="showForm('tester')">Apply as Tester</button>
+    </div>
+
+    <form id="applicationForm">
+      <input type="hidden" name="role" id="roleInput">
+
+      <label for="name">Your Name</label>
+      <input type="text" name="name" id="name" required>
+
+      <div id="questions"></div>
+
+      <button type="submit" class="submit-btn">Submit Application</button>
+      <div class="message" id="msgBox"></div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('applicationForm');
+    const msgBox = document.getElementById('msgBox');
+    const questionsDiv = document.getElementById('questions');
+    const roleInput = document.getElementById('roleInput');
+
+    const questions = {
+      mod: [
+        "Why do you want to be a moderator?",
+        "How would you deal with a spammer?",
+        "What’s your timezone?",
+        "Have you ever moderated a server before?",
+        "How active can you be daily?",
+        "What would you do if two members are fighting?",
+        "Do you know how to use moderation bots?",
+        "How old are you?",
+        "What's your Discord tag?",
+        "What's a rule you'd add?",
+        "How would you welcome a new member?",
+        "Tell us a fun fact about yourself!"
+      ],
+      tester: [
+        "Why do you want to be a tester?",
+        "Do you have experience testing tools or scripts?",
+        "What's your device setup?",
+        "How often can you test?",
+        "Do you know how to report bugs clearly?",
+        "Have you tested cheats before?",
+        "Do you use screen recording?",
+        "How old are you?",
+        "What’s your favorite game?",
+        "Can you follow detailed instructions?",
+        "How do you handle broken scripts?",
+        "What would make you a great tester?"
+      ]
+    };
+
+    function showForm(role) {
+      form.style.display = 'block';
+      roleInput.value = role;
+      questionsDiv.innerHTML = '';
+
+      questions[role].forEach((q, i) => {
+        const label = document.createElement('label');
+        label.textContent = `${i + 1}. ${q}`;
+        const input = document.createElement('textarea');
+        input.name = `q${i + 1}`;
+        input.required = true;
+        questionsDiv.appendChild(label);
+        questionsDiv.appendChild(input);
+      });
+
+      window.scrollTo({ top: form.offsetTop, behavior: 'smooth' });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = new URLSearchParams();
+      for (const pair of formData) {
+        data.append(pair[0], pair[1]);
+      }
+
+      try {
+        const res = await fetch("https://script.google.com/macros/s/YOUR_GOOGLE_SCRIPT_ID_HERE/exec", {
+          method: 'POST',
+          body: data
+        });
+
+        if (res.ok) {
+          msgBox.textContent = "✅ Application submitted! We'll review it soon!";
+          msgBox.style.color = "#00ffcc";
+          form.reset();
+          form.style.display = "none";
+        } else {
+          msgBox.textContent = "⚠️ Submission failed. Try again later!";
+          msgBox.style.color = "#ff6666";
+        }
+      } catch (err) {
+        msgBox.textContent = "⚠️ Something went wrong. Internet goblins again?";
+        msgBox.style.color = "#ff6666";
+      }
+    });
+  </script>
+</body>
+</html>
