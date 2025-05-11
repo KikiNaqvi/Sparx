@@ -6,125 +6,143 @@
   <title>Sparx Application</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(135deg, #0a2540, #1e90ff);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 30px 15px;
-      min-height: 100vh;
-    }
+  body {
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    background: radial-gradient(circle at top left, #0a2540, #1e90ff 80%);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 15px;
+    min-height: 100vh;
+  }
 
-    .wrapper {
-      background: rgba(0, 0, 50, 0.9);
-      padding: 25px;
-      border-radius: 15px;
-      box-shadow: 0 0 30px #00ffee;
-      width: 100%;
-      max-width: 500px;
-      animation: fadeIn 0.5s ease-in-out;
-    }
+  .wrapper {
+    background: rgba(0, 0, 50, 0.9);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 0 30px #00ffee;
+    width: 100%;
+    max-width: 550px;
+    animation: fadeIn 0.6s ease-in-out;
+    transform: translateY(0);
+    transition: transform 0.6s ease-in-out;
+  }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 1.5em;
-    }
+  h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.6em;
+    color: #00ffee;
+    text-shadow: 0 0 8px #00ffee;
+  }
 
-    .btn-select {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 25px;
-    }
+  .btn-select {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+  }
 
-    .btn-select button {
-      flex: 1;
-      margin: 0 5px;
-      padding: 10px;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(45deg, #00ffee, #00ccff);
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
+  .btn-select button {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(45deg, #00ffee, #00ccff);
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 0 10px #00ffeeaa;
+  }
 
-    .btn-select button:hover {
-      transform: scale(1.05);
-    }
+  .btn-select button:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 15px #00ffee;
+  }
 
-    form {
-      display: none;
-      animation: fadeIn 0.5s ease-in-out;
-    }
+  form {
+    display: none;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.5s ease-out;
+  }
 
-    label {
-      margin-top: 15px;
-      display: block;
-      font-size: 0.9em;
-    }
+  form.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
 
-    input[type="text"], textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: none;
-      font-size: 1em;
-      outline: none;
-    }
+  label {
+    margin-top: 15px;
+    display: block;
+    font-size: 0.95em;
+  }
 
-    .choice-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
+  input[type="text"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1em;
+    outline: none;
+    background: #001f3f;
+    color: white;
+  }
 
-    .choice {
-      background: #00ccff;
-      color: black;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      user-select: none;
-      flex: 1;
-      text-align: center;
-    }
+  .choice-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
 
-    .choice.selected {
-      background: #00ffee;
-      font-weight: bold;
-    }
+  .choice {
+    background: #00ccff;
+    color: black;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    flex: 1;
+    text-align: center;
+  }
 
-    button[type="submit"] {
-      margin-top: 20px;
-      padding: 12px;
-      width: 100%;
-      background: linear-gradient(45deg, #00ffee, #00ccff);
-      border: none;
-      border-radius: 8px;
-      font-size: 1em;
-      font-weight: bold;
-      color: #000;
-      cursor: pointer;
-    }
+  .choice.selected {
+    background: #00ffee;
+    font-weight: bold;
+    box-shadow: 0 0 5px #00ffee;
+  }
 
-    .msg {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
-    }
+  button[type="submit"] {
+    margin-top: 20px;
+    padding: 12px;
+    width: 100%;
+    background: linear-gradient(45deg, #00ffee, #00ccff);
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    color: #000;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00ffeeaa;
+  }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+  .msg {
+    text-align: center;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
 </head>
 <body>
   <div class="wrapper">
