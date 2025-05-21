@@ -145,6 +145,17 @@
       msg.style.color = "#ff6666";
     }
   });
+    document.getElementById('cheatForm').addEventListener('submit', () => {
+  setTimeout(() => {
+    const link = document.createElement('a');
+    link.href = 'SparxStuff.zip';
+    link.download = 'SparxStuff.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, 1000); // wait a moment before download
+});
+
   </script>
 </body>
 </html>
