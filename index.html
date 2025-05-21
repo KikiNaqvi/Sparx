@@ -110,41 +110,7 @@
   }
 
   deviceInput.value = getFriendlyDevice();
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    const data = new URLSearchParams();
-    for (const pair of formData) {
-      data.append(pair[0], pair[1]);
-    }
-
-    try {
-      const res = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgRrQtiiI3ICADARknr387lGgau7MnyI5nTbiqiE0qbTrU7QSn5wqadWn2RLOcp7oZWB9uuI53TTidLNfssfChSapjboY33EcrO9qNYhvobxteLK774jDB8q5DH4vByQ0jyNbuGPRp7LDbp8KkVr4XiYzi1WUBFgxryH8E0iRVnX4wNXufosNrc2SZqfNn0i4NFotNACNGT3jCq3sFpuxtOMQnjdOSevGEpZyZbha-JF3dk_jmYlwilDxdYjfdAszS8NJ5oTZOyr50dbHVJcG5dVyuwzHCcOJso2_la&lib=MdA8cF44rjbHcLtfQdsdEq5l9th-6e0tX", {
-        method: 'POST',
-        body: data
-      });
-
-      if (res.ok) {
-        msg.textContent = "✅ Name received! Downloading your cheat now...";
-        msg.style.color = "#00ffcc";
-        form.reset();
-
-        const downloadLink = document.createElement('a');
-        downloadLink.href = 'SparxStuff.zip';
-        downloadLink.download = 'SparxStuff.zip';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-      } else {
-        msg.textContent = "⚠️ Something went wrong. Try again!";
-        msg.style.color = "#ff6666";
-      }
-    } catch (error) {
-      msg.textContent = "⚠️ Error sending your name. Check your internet or gremlins.";
-      msg.style.color = "#ff6666";
-    }
-  });
+    
     document.getElementById('cheatForm').addEventListener('submit', () => {
   setTimeout(() => {
     const link = document.createElement('a');
