@@ -87,8 +87,7 @@
 </form>
     <div class="message" id="feedbackMsg"></div>
   </div>
-
-  <script>
+<script>
   const form = document.getElementById('cheatForm');
   const msg = document.getElementById('feedbackMsg');
   const deviceInput = document.getElementById('device');
@@ -110,18 +109,22 @@
   }
 
   deviceInput.value = getFriendlyDevice();
-    
-    document.getElementById('cheatForm').addEventListener('submit', () => {
-  setTimeout(() => {
-    const link = document.createElement('a');
-    link.href = 'SparxStuff.zip';
-    link.download = 'SparxStuff.zip';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, 1000); // wait a moment before download
-});
 
-  </script>
+  form.addEventListener('submit', () => {
+    // Show success message
+    msg.textContent = "✅ Success! Downloading your cheat...";
+    msg.style.color = "#00ffcc";
+
+    // Trigger download after short delay
+    setTimeout(() => {
+      const link = document.createElement('a');
+      link.href = 'SparxStuff.zip';
+      link.download = 'SparxStuff.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }, 1200); // 1.2 seconds delay for that sweet effect
+  });
+</script>
 </body>
 </html>
