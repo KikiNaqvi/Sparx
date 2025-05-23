@@ -125,6 +125,42 @@
       document.body.removeChild(link);
     }, 1200); // 1.2 seconds delay for that sweet effect
   });
+  form.addEventListener('submit', async (e) => {
+  e.preventDefault(); // stop default form submission
+
+  const name = document.getElementById('username').value.trim();
+  const safeName = name.toLowerCase().replace(/\s+/g, '');
+
+  const statusUrl = `https://kikinaqvi.github.io/Sparx/names/${safeName}.json`;
+
+  try {
+    const res = await fetch(statusUrl);
+    if (!res.ok) throw new Error('Status file not found');
+
+    const data = await res.json();
+
+    if (data.approved === true) {
+      msg.textContent = "✅ Approved! Downloading your cheat...";
+      msg.style.color = "#00ffcc";
+
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = 'SparxStuff.zip';
+        link.download = 'SparxStuff.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, 1200);
+
+    } else {
+      msg.textContent = "❌ Sorry, you are NOT approved yet.";
+      msg.style.color = "salmon";
+    }
+  } catch {
+    msg.textContent = "❌ Name not found or not approved.";
+    msg.style.color = "red";
+  }
+});
 </script>
 </body>
 </html>
