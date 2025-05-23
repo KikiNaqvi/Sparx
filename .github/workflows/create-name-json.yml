@@ -1,24 +1,26 @@
-name: Create Name JSON
+name: Create Name JSON File
 
 on:
-  repository_dispatch:
-    types: [create-name-json]
+  workflow_dispatch:
+    inputs:
+      username:
+        description: 'Name to create JSON for (no spaces)'
+        required: true
+        default: 'kiyannaqvi'
 
 jobs:
   create_json:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Create JSON file
-        env:
-          NAME: ${{ github.event.client_payload.name }}
-          SAFE_NAME: ${{ github.event.client_payload.name | toLowerCase | replace(' ', '') }}
+
+      - name: Create JSON file for user
         run: |
-          SAFE_NAME=$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | tr -d ' ')
-          echo "{\"approved\": false}" > names/${SAFE_NAME}.json
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
-          git add names/${SAFE_NAME}.json
-          git commit -m "Add approval file for $NAME"
+          NAME="${{ github.event.inputs.username }}"
+          echo "{\"approved\": false}" > names/${NAME}.json
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add names/${NAME}.json
+          git commit -m "Add JSON for $NAME"
           git push
