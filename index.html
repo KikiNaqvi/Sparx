@@ -102,54 +102,44 @@
     const webhookURL = "https://api.github.com/repos/kikinaqvi/Sparx/dispatches";
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  e.preventDefault();
 
-      msg.style.color = "#00ffcc";
-      msg.textContent = "⏳ Logging your info and triggering creation...";
+  msg.style.color = "#00ffcc";
+  msg.textContent = "⏳ Logging your info and triggering creation...";
 
-      const name = document.getElementById('username').value.trim();
-      if (!name) {
-        msg.style.color = "salmon";
-        msg.textContent = "❌ Please enter a name.";
-        return;
-      }
+  const name = document.getElementById('username').value.trim();
+  if (!name) {
+    msg.style.color = "salmon";
+    msg.textContent = "❌ Please enter a name.";
+    return;
+  }
 
-      const safeName = name.toLowerCase().replace(/\s+/g, '');
-
-      try {
-        // 1. Submit form to Google Apps Script for logging (using fetch to send data)
-        await fetch(form.action, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            username: name,
-            device: deviceInput.value
-          })
-        });
-
-        // 2. Trigger GitHub Action to create the JSON file (fake webhook here, replace with your real one)
-        const triggerResp = await fetch(webhookURL, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ username: safeName })
-        });
-
-        if (!triggerResp.ok) {
-          throw new Error('Failed to trigger GitHub Action');
-        }
-
-        msg.textContent = "🔄 Name sent! Waiting for approval (polling every 3s)...";
-
-        // 3. Poll GitHub Pages for the approval JSON file
-        pollForApproval(safeName);
-
-      } catch (error) {
-        msg.style.color = "salmon";
-        msg.textContent = "❌ Error: " + error.message;
-        console.error(error);
-      }
+  try {
+    // Only submit to Google Apps Script now
+    const response = await fetch(form.action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        username: name,
+        device: deviceInput.value
+      })
     });
 
+    if (!response.ok) throw new Error("Failed to log info");
+
+    msg.textContent = "🔄 Name sent! Waiting for approval (polling every 3s)...";
+
+    // Use sanitized name for polling (same logic as before)
+    const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    pollForApproval(safeName);
+
+  } catch (error) {
+    msg.style.color = "salmon";
+    msg.textContent = "❌ Error: " + error.message;
+    console.error(error);
+  }
+});
+    
     async function pollForApproval(username) {
       const statusUrl = `https://kikinaqvi.github.io/Sparx/names/${username}.json`;
       const interval = setInterval(async () => {
