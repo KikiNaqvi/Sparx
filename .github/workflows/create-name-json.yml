@@ -1,34 +1,32 @@
-name: Add New Name
+name: Create Name JSON
 
 on:
   workflow_dispatch:
     inputs:
       name:
-        description: "Name to approve (e.g. 'Kiyan Naqvi')"
+        description: "The username to approve"
         required: true
+        default: "johnsmith"
+
+permissions:
+  contents: write
 
 jobs:
-  createFile:
+  create:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
-      - name: Format username
-        id: format
-        run: |
-          SAFE_NAME=$(echo "${{ github.event.inputs.name }}" | tr '[:upper:]' '[:lower:]' | tr -d ' ')
-          echo "SAFE_NAME=$SAFE_NAME" >> $GITHUB_ENV
+    - name: Create JSON file
+      run: |
+        safe="${{ github.event.inputs.name }}"
+        mkdir -p names
+        echo '{ "approved": false }' > names/${safe}.json
 
-      - name: Create JSON file
-        run: |
-          mkdir -p names
-          echo '{ "approved": true }' > "names/${{ env.SAFE_NAME }}.json"
-
-      - name: Commit and push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add names/${{ env.SAFE_NAME }}.json
-          git commit -m "Add approval for ${{ github.event.inputs.name }}"
-          git push
+    - name: Commit & push
+      run: |
+        git config user.name "sparx-bot"
+        git config user.email "sparx@example.com"
+        git add names/
+        git commit -m "Add ${safe}.json"
+        git push
