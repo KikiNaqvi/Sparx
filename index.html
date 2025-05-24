@@ -66,90 +66,116 @@
   <div class="container">
     <h1 class="sparkle">✨ Sparx Cheats Portal ✨</h1>
     <p>Enter your name to unlock cheat mode:</p>
+    <!-- Real logging POST to Google Apps Script with hidden iframe so no CORS -->
     <form id="cheatForm" action="https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec" method="POST" target="hidden_iframe">
-  <input type="text" name="username" required />
-  <input type="hidden" name="device" />
-  <button type="submit">Activate</button>
-</form>
-<iframe name="hidden_iframe" style="display:none;"></iframe>
+      <input type="text" name="username" id="username" required />
+      <input type="hidden" name="device" id="device" />
+      <button type="submit">Activate</button>
+    </form>
+    <iframe name="hidden_iframe" style="display:none;"></iframe>
     <div class="message" id="feedbackMsg"></div>
   </div>
 
   <script>
     const form = document.getElementById('cheatForm');
     const msg = document.getElementById('feedbackMsg');
+    const deviceInput = document.getElementById('device');
 
-    // Replace this with your actual webhook URL that triggers GitHub Actions
-    const webhookURL = "https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec";
+    // Friendly device detection
+    function getFriendlyDevice() {
+      const ua = navigator.userAgent.toLowerCase();
+      if (ua.includes("iphone")) return "iPhone";
+      if (ua.includes("ipad")) return "iPad";
+      if (ua.includes("macintosh") || ua.includes("mac os")) return "MacBook";
+      if (ua.includes("windows")) return "Windows PC";
+      if (ua.includes("linux") && !ua.includes("android")) return "Linux Machine";
+      if (ua.includes("android")) {
+        if (ua.includes("samsung")) return "Samsung";
+        if (ua.includes("galaxy")) return "Galaxy";
+        return "Android";
+      }
+      return "Unknown";
+    }
+    deviceInput.value = getFriendlyDevice();
+
+    // This should be your real GitHub Actions webhook endpoint (replace!)
+    const webhookURL = "https://api.github.com/repos/kikinaqvi/Sparx/dispatches";
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       msg.style.color = "#00ffcc";
-      msg.textContent = "⏳ Sending your name to Sparx servers...";
+      msg.textContent = "⏳ Logging your info and triggering creation...";
 
-      let name = document.getElementById('username').value.trim();
-      if (!name) return;
+      const name = document.getElementById('username').value.trim();
+      if (!name) {
+        msg.style.color = "salmon";
+        msg.textContent = "❌ Please enter a name.";
+        return;
+      }
 
-      // Convert "Kiyan Naqvi" to "kiyannaqvi"
       const safeName = name.toLowerCase().replace(/\s+/g, '');
 
       try {
-        // POST to your webhook to trigger GitHub Action to create the file
-        const response = await fetch(webhookURL, {
+        // 1. Submit form to Google Apps Script for logging (using fetch to send data)
+        await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            username: name,
+            device: deviceInput.value
+          })
+        });
+
+        // 2. Trigger GitHub Action to create the JSON file (fake webhook here, replace with your real one)
+        const triggerResp = await fetch(webhookURL, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ username: safeName })
         });
 
-        if (!response.ok) {
-          msg.style.color = "salmon";
-          msg.textContent = "❌ Failed to trigger creation. Try again.";
-          return;
+        if (!triggerResp.ok) {
+          throw new Error('Failed to trigger GitHub Action');
         }
 
-        msg.textContent = "🔄 Name sent! Waiting for approval... (polling every 3 seconds)";
+        msg.textContent = "🔄 Name sent! Waiting for approval (polling every 3s)...";
 
-        // Start polling GitHub Pages for the JSON file
+        // 3. Poll GitHub Pages for the approval JSON file
         pollForApproval(safeName);
 
       } catch (error) {
         msg.style.color = "salmon";
-        msg.textContent = "❌ Network error. Try again later.";
+        msg.textContent = "❌ Error: " + error.message;
         console.error(error);
       }
     });
 
     async function pollForApproval(username) {
       const statusUrl = `https://kikinaqvi.github.io/Sparx/names/${username}.json`;
-
       const interval = setInterval(async () => {
         try {
-          const res = await fetch(statusUrl, {cache: "no-store"});
+          const res = await fetch(statusUrl, { cache: "no-store" });
           if (!res.ok) {
             msg.textContent = "⌛ Waiting for your approval file...";
-            return; // keep polling
+            return;
           }
-
           const data = await res.json();
-
           if (data.approved === true) {
             clearInterval(interval);
             msg.style.color = "#00ffcc";
             msg.textContent = "✅ Approved! Starting download...";
 
-            // Trigger the cheat file download
+            // Trigger the cheat zip download
             downloadCheat();
-
           } else {
-            msg.style.color = "salmon";
-            msg.textContent = "❌ Your file exists but is NOT approved yet.";
             clearInterval(interval);
+            msg.style.color = "salmon";
+            msg.textContent = "❌ File exists but NOT approved yet.";
           }
         } catch (err) {
+          clearInterval(interval);
           msg.style.color = "salmon";
           msg.textContent = "❌ Error fetching approval status.";
-          clearInterval(interval);
           console.error(err);
         }
       }, 3000);
