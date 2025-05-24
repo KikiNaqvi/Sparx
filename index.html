@@ -128,7 +128,7 @@
     if (!response.ok) throw new Error("Failed to log info");
 
     const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    msg.textContent = "🔄 Name sent! Waiting for approval (polling every 3s)...";
+    msg.textContent = "🔄 Name sent! Waiting for approval (this might take long)...";
 
     pollForApproval(safeName);
 
