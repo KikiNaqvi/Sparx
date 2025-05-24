@@ -115,7 +115,7 @@
   }
 
   try {
-    // Only submit to Google Apps Script now
+    // Submit to Google Apps Script only
     const response = await fetch(form.action, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -127,10 +127,9 @@
 
     if (!response.ok) throw new Error("Failed to log info");
 
+    const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
     msg.textContent = "🔄 Name sent! Waiting for approval (polling every 3s)...";
 
-    // Use sanitized name for polling (same logic as before)
-    const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
     pollForApproval(safeName);
 
   } catch (error) {
