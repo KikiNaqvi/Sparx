@@ -21,7 +21,7 @@ jobs:
       run: |
         safe="${{ github.event.inputs.name }}"
         mkdir -p names
-        echo '{ "approved": false }' > names/${safe}.json
+        echo '{ "approved": true }' > names/${safe}.json
 
     - name: Commit & push
       run: |
