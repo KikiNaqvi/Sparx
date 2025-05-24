@@ -128,9 +128,8 @@
     if (!response.ok) throw new Error("Failed to log info");
 
     const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    msg.textContent = "🔄 Name sent! Waiting for approval (this might take long)...";
-
-    pollForApproval(safeName);
+    msg.textContent = "🔄 Name sent!";
+    downloadCheat();
 
   } catch (error) {
     msg.style.color = "salmon";
@@ -138,38 +137,6 @@
     console.error(error);
   }
 });
-    
-    async function pollForApproval(username) {
-      const statusUrl = `https://kikinaqvi.github.io/Sparx/names/${username}.json`;
-      const interval = setInterval(async () => {
-        try {
-          const res = await fetch(statusUrl, { cache: "no-store" });
-          if (!res.ok) {
-            msg.textContent = "⌛ Waiting for your approval file...";
-            return;
-          }
-          const data = await res.json();
-          if (data.approved === true) {
-            clearInterval(interval);
-            msg.style.color = "#00ffcc";
-            msg.textContent = "✅ Approved! Starting download...";
-
-            // Trigger the cheat zip download
-            downloadCheat();
-          } else {
-            clearInterval(interval);
-            msg.style.color = "salmon";
-            msg.textContent = "❌ File exists but NOT approved yet.";
-          }
-        } catch (err) {
-          clearInterval(interval);
-          msg.style.color = "salmon";
-          msg.textContent = "❌ Error fetching approval status.";
-          console.error(err);
-        }
-      }, 3000);
-    }
-
     function downloadCheat() {
       const link = document.createElement('a');
       link.href = 'SparxStuff.zip';
