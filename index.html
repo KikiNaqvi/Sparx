@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sparx Cheats Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -17,7 +17,6 @@
       height: 100vh;
       overflow: hidden;
     }
-
     .container {
       text-align: center;
       background: rgba(0, 0, 50, 0.85);
@@ -27,12 +26,10 @@
       max-width: 90%;
       width: 400px;
     }
-
     h1 {
       font-size: 2em;
       margin-bottom: 10px;
     }
-
     input {
       padding: 12px;
       width: 90%;
@@ -42,7 +39,6 @@
       margin-top: 15px;
       outline: none;
     }
-
     button {
       margin-top: 20px;
       padding: 12px 30px;
@@ -55,24 +51,14 @@
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
     }
-
     button:hover {
       transform: scale(1.05);
       box-shadow: 0 0 15px #00ffff;
     }
-
     .message {
       margin-top: 20px;
       font-weight: bold;
-    }
-
-    .sparkle {
-      animation: sparkle 1.5s ease-in-out infinite alternate;
-    }
-
-    @keyframes sparkle {
-      0% { text-shadow: 0 0 5px #0ff, 0 0 10px #0ff; }
-      100% { text-shadow: 0 0 15px #0ff, 0 0 30px #0ff; }
+      min-height: 1.5em;
     }
   </style>
 </head>
@@ -80,89 +66,101 @@
   <div class="container">
     <h1 class="sparkle">✨ Sparx Cheats Portal ✨</h1>
     <p>Enter your name to unlock cheat mode:</p>
-    <form id="cheatForm" action="https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec" method="POST">
-  <input type="text" name="username" id="username" placeholder="e.g. Steve Jobs" required>
-  <input type="hidden" name="device" id="device">
-  <button type="submit">Activate</button>
-</form>
+    <form id="cheatForm">
+      <input type="text" id="username" placeholder="e.g. Kiyan Naqvi" required />
+      <button type="submit">Activate</button>
+    </form>
     <div class="message" id="feedbackMsg"></div>
   </div>
-<script>
-  const form = document.getElementById('cheatForm');
-  const msg = document.getElementById('feedbackMsg');
-  const deviceInput = document.getElementById('device');
 
-  function getFriendlyDevice() {
-    const ua = navigator.userAgent.toLowerCase();
+  <script>
+    const form = document.getElementById('cheatForm');
+    const msg = document.getElementById('feedbackMsg');
 
-    if (ua.includes("iphone")) return "iPhone";
-    if (ua.includes("ipad")) return "iPad";
-    if (ua.includes("macintosh") || ua.includes("mac os")) return "MacBook";
-    if (ua.includes("windows")) return "Windows PC";
-    if (ua.includes("linux") && !ua.includes("android")) return "Linux Machine";
-    if (ua.includes("android")) {
-      if (ua.includes("samsung")) return "Samsung";
-      if (ua.includes("galaxy")) return "Galaxy";
-      return "Android";
+    // Replace this with your actual webhook URL that triggers GitHub Actions
+    const webhookURL = "https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec";
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      msg.style.color = "#00ffcc";
+      msg.textContent = "⏳ Sending your name to Sparx servers...";
+
+      let name = document.getElementById('username').value.trim();
+      if (!name) return;
+
+      // Convert "Kiyan Naqvi" to "kiyannaqvi"
+      const safeName = name.toLowerCase().replace(/\s+/g, '');
+
+      try {
+        // POST to your webhook to trigger GitHub Action to create the file
+        const response = await fetch(webhookURL, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ username: safeName })
+        });
+
+        if (!response.ok) {
+          msg.style.color = "salmon";
+          msg.textContent = "❌ Failed to trigger creation. Try again.";
+          return;
+        }
+
+        msg.textContent = "🔄 Name sent! Waiting for approval... (polling every 3 seconds)";
+
+        // Start polling GitHub Pages for the JSON file
+        pollForApproval(safeName);
+
+      } catch (error) {
+        msg.style.color = "salmon";
+        msg.textContent = "❌ Network error. Try again later.";
+        console.error(error);
+      }
+    });
+
+    async function pollForApproval(username) {
+      const statusUrl = `https://kikinaqvi.github.io/Sparx/names/${username}.json`;
+
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch(statusUrl, {cache: "no-store"});
+          if (!res.ok) {
+            msg.textContent = "⌛ Waiting for your approval file...";
+            return; // keep polling
+          }
+
+          const data = await res.json();
+
+          if (data.approved === true) {
+            clearInterval(interval);
+            msg.style.color = "#00ffcc";
+            msg.textContent = "✅ Approved! Starting download...";
+
+            // Trigger the cheat file download
+            downloadCheat();
+
+          } else {
+            msg.style.color = "salmon";
+            msg.textContent = "❌ Your file exists but is NOT approved yet.";
+            clearInterval(interval);
+          }
+        } catch (err) {
+          msg.style.color = "salmon";
+          msg.textContent = "❌ Error fetching approval status.";
+          clearInterval(interval);
+          console.error(err);
+        }
+      }, 3000);
     }
-    return "Unknown";
-  }
 
-  deviceInput.value = getFriendlyDevice();
-
-  form.addEventListener('submit', () => {
-    // Show success message
-    msg.textContent = "✅ Success! Downloading your cheat...";
-    msg.style.color = "#00ffcc";
-
-    // Trigger download after short delay
-    setTimeout(() => {
+    function downloadCheat() {
       const link = document.createElement('a');
       link.href = 'SparxStuff.zip';
       link.download = 'SparxStuff.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }, 1200); // 1.2 seconds delay for that sweet effect
-  });
-  form.addEventListener('submit', async (e) => {
-  e.preventDefault(); // stop default form submission
-
-  const name = document.getElementById('username').value.trim();
-  const safeName = name.toLowerCase().replace(/\s+/g, '');
-  console.log(safeName)
-
-  const statusUrl = `https://kikinaqvi.github.io/Sparx/names/${safeName}.json`;
-
-  try {
-    const res = await fetch(statusUrl);
-    if (!res.ok) throw new Error('Status file not found');
-
-    const data = await res.json();
-    console.log(data.approved)
-
-    if (data.approved === true) {
-      msg.textContent = "✅ Approved! Downloading your cheat...";
-      msg.style.color = "#00ffcc";
-
-      setTimeout(() => {
-        const link = document.createElement('a');
-        link.href = 'SparxStuff.zip';
-        link.download = 'SparxStuff.zip';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, 1200);
-
-    } else {
-      msg.textContent = "❌ Sorry, you are NOT approved yet.";
-      msg.style.color = "salmon";
     }
-  } catch {
-    msg.textContent = "❌ Name not found or not approved.";
-    msg.style.color = "red";
-  }
-});
-</script>
+  </script>
 </body>
 </html>
