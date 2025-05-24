@@ -6,7 +6,6 @@ on:
       name:
         description: "The username to approve"
         required: true
-        default: "johnsmith"
 
 permissions:
   contents: write
@@ -14,19 +13,20 @@ permissions:
 jobs:
   create:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Create JSON file
-      run: |
-        safe="${{ github.event.inputs.name }}"
-        mkdir -p names
-        echo '{ "approved": true }' > names/${safe}.json
+      - name: Create JSON file
+        run: |
+          safe="${{ github.event.inputs.name }}"
+          mkdir -p names
+          echo '{ "approved": false }' > names/${safe}.json
 
-    - name: Commit & push
-      run: |
-        git config user.name "sparx-bot"
-        git config user.email "sparx@example.com"
-        git add names/
-        git commit -m "Add ${safe}.json"
-        git push
+      - name: Commit & push
+        run: |
+          git config user.name "sparx-bot"
+          git config user.email "sparx@example.com"
+          git add names/
+          git commit -m "Add ${safe}.json"
+          git push
