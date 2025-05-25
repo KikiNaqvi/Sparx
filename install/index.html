@@ -16,6 +16,22 @@
       display: flex;
       flex-direction: column;
     }
+
+    /* BIG ROUND ICON IN TOP-LEFT CORNER */
+    #cornerIcon {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(0, 204, 255, 0.7);
+      object-fit: cover;
+      z-index: 9999;
+      background: #00000088;
+      padding: 8px;
+    }
+
     header {
       display: flex;
       align-items: center;
@@ -23,11 +39,7 @@
       background: #1a1a1a;
       gap: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.7);
-    }
-    header img {
-      width: 60px;
-      height: 60px;
-      object-fit: contain;
+      margin-left: 120px; /* To not get hidden behind icon */
     }
     header h1 {
       font-size: 2.2rem;
@@ -40,6 +52,7 @@
       padding: 20px 40px;
       gap: 40px;
       overflow: hidden;
+      margin-left: 120px; /* Same left margin so content not behind icon */
     }
     /* 3 columns */
     .left, .middle, .right {
@@ -144,8 +157,10 @@
 </head>
 <body>
 
+<!-- Big circular corner icon -->
+<img id="cornerIcon" src="icon.png" alt="Sparx Icon" />
+
 <header>
-  <img src="icon.png" alt="Sparx Icon" />
   <h1>Sparx Installation Help</h1>
 </header>
 
@@ -189,13 +204,4 @@
 
   function showVideo() {
     document.getElementById('contentBox').innerHTML = `
-      <video controls width="100%" src="VIDEO-2025-05-21-22-36-11.mp4"></video>
-    `;
-  }
-
-  // Show instructions on page load by default
-  showInstructions();
-</script>
-
-</body>
-</html>
+      <video controls width="100%" src="VIDEO-2025-05-21-22-36-11.m
