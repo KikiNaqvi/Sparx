@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Sparx Installation Help</title>
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet">
+  <link rel="icon" href="icon.png" type="image/png">
   <style>
     body {
       margin: 0;
@@ -19,10 +20,31 @@
       font-size: 2em;
       margin-bottom: 20px;
     }
+    .main-row {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1200px;
+      margin-bottom: 30px;
+      gap: 20px;
+    }
+    .side-box {
+      flex: 1;
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .center-box {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
     .buttons {
       display: flex;
       gap: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
     button {
       background: linear-gradient(to right, #444, #666);
@@ -53,16 +75,52 @@
       font-size: 14px;
       white-space: pre-wrap;
     }
+    .scroll-videos {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .scroll-videos video {
+      width: 200px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
   <h1>📦 Installation Guide</h1>
-  <div class="buttons">
-    <button onclick="showInstructions()">📖 Text Instructions</button>
-    <button onclick="showVideo()">🎥 Watch Video</button>
-  </div>
-  <div class="content" id="contentBox">
-    <!-- Dynamic content will be injected here -->
+
+  <div class="main-row">
+    <!-- Left: Watch Some Edits -->
+    <div class="side-box">
+      <h2>🎞️ Watch Some Edits</h2>
+      <button onclick="window.location.href='/edits'">Go to Edits Page</button>
+      <div class="scroll-videos">
+        <video src="video1.mp4" controls></video>
+        <video src="video2.mp4" controls></video>
+        <video src="video3.mp4" controls></video>
+        <video src="video4.mp4" controls></video>
+      </div>
+    </div>
+
+    <!-- Center: Main Buttons -->
+    <div class="center-box">
+      <div class="buttons">
+        <button onclick="showInstructions()">📖 Text Instructions</button>
+        <button onclick="showVideo()">🎥 Watch Video</button>
+      </div>
+      <div class="content" id="contentBox">
+        <!-- Dynamic content will be injected here -->
+      </div>
+    </div>
+
+    <!-- Right: Discord Join -->
+    <div class="side-box">
+      <h2>💬 Join Our Discord</h2>
+      <p>Hang out with the crew, ask questions, or just vibe 🎧</p>
+      <button onclick="window.open('https://discord.gg/fgQ7KN2gTV', '_blank')">Join Discord</button>
+    </div>
   </div>
 
   <script>
