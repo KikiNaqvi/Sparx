@@ -1,172 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sparx Cheats Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
-  <link rel="icon" href="icon.png" type="image/png" />
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Rubik', sans-serif;
-      background: linear-gradient(180deg, #121212, #212121, #303030);
-      color: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-    .container {
-      text-align: center;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
-      max-width: 90%;
-      width: 420px;
-      backdrop-filter: blur(8px);
-    }
-    h1 {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      justify-content: center;
-      font-size: 2em;
-      margin-bottom: 10px;
-      text-shadow: 0 0 10px #00ccff;
-      user-select: none;
-    }
-    h1 img {
-      width: 60px;
-      height: 60px;
-      object-fit: contain;
-    }
-    input {
-      padding: 12px;
-      width: 90%;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      margin-top: 15px;
-      outline: none;
-      background: rgba(255, 255, 255, 0.08);
-      color: #eee;
-      font-family: 'Poppins', sans-serif;
-    }
-    button {
-      margin-top: 20px;
-      padding: 12px 30px;
-      background: linear-gradient(to right, #333, #555);
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      color: #eee;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Rubik', sans-serif;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
-    }
-    button:hover {
-      transform: scale(1.07);
-      background: linear-gradient(to right, #666, #999);
-      box-shadow: 0 0 18px rgba(255, 255, 255, 0.1), 0 0 8px rgba(255, 255, 255, 0.2) inset;
-    }
-    .message {
-      margin-top: 20px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      color: #eee;
-      word-break: break-word;
-      text-shadow: 0 0 6px rgba(255, 255, 255, 0.1);
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>
-      <img src="icon.png" alt="Sparx Icon" />
-      ✨ Sparx Cheats Portal ✨
-    </h1>
-    <p>Enter your name to unlock cheat mode:</p>
-    <form id="cheatForm" action="https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec" method="POST" target="hidden_iframe">
-      <input type="text" name="username" id="username" required />
-      <input type="hidden" name="device" id="device" />
-      <button type="submit"><i class="fa fa-lock-open"></i> Activate</button>
-    </form>
-    <iframe name="hidden_iframe" style="display:none;"></iframe>
-    <div class="message" id="feedbackMsg"></div>
-  </div>
-
-  <script>
-    const form = document.getElementById('cheatForm');
-    const msg = document.getElementById('feedbackMsg');
-    const deviceInput = document.getElementById('device');
-
-    function getFriendlyDevice() {
-      const ua = navigator.userAgent.toLowerCase();
-      if (ua.includes("iphone")) return "iPhone";
-      if (ua.includes("ipad")) return "iPad";
-      if (ua.includes("macintosh")) return "MacBook";
-      if (ua.includes("windows")) return "Windows PC";
-      if (ua.includes("linux") && !ua.includes("android")) return "Linux Machine";
-      if (ua.includes("android")) {
-        if (ua.includes("samsung")) return "Samsung";
-        if (ua.includes("galaxy")) return "Galaxy";
-        return "Android";
-      }
-      return "Unknown";
-    }
-
-    deviceInput.value = getFriendlyDevice();
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      msg.style.color = "#00ffcc";
-      msg.textContent = "⏳ Logging your info and triggering creation...";
-
-      const name = document.getElementById('username').value.trim();
-      if (!name) {
-        msg.style.color = "salmon";
-        msg.textContent = "❌ Please enter a name.";
-        return;
-      }
-
-      try {
-        await fetch(form.action, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            username: name,
-            device: deviceInput.value
-          })
-        });
-
-        msg.textContent = "🔄 Name sent!";
-        downloadCheat();
-
-      } catch (error) {
-        msg.style.color = "salmon";
-        msg.textContent = "❌ Error: " + error.message;
-      }
-    });
-
-    function downloadCheat() {
-      const link = document.createElement('a');
-      link.href = 'SparxStuff.zip';
-      link.download = 'SparxStuff.zip';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => {
-        window.location.href = "install";
-      }, 500);
-    }
-  </script>
-</body>
-</html>
+.container {
+  background: #1e1e1e;
+  padding: 40px 60px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  max-width: 600px;
+  text-align: center;
+}
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+p {
+  font-size: 1.1rem;
+  color: #ccc;
+  margin-bottom: 30px;
+}
+.button {
+  padding: 14px 28px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 0 20px #28a74577;
+}
+.button:hover {
+  background: #218838;
+  box-shadow: 0 0 30px #28a745aa;
+}
