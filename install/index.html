@@ -1,74 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sparx Installation Help</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet">
-  <link rel="icon" href="icon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" />
+  <link rel="icon" href="icon.png" type="image/png" />
   <style>
     body {
       margin: 0;
       font-family: 'Rubik', sans-serif;
       background: #121212;
       color: #eee;
+      height: 100vh;
       display: flex;
       flex-direction: column;
+    }
+    header {
+      display: flex;
       align-items: center;
-      padding: 40px;
-    }
-    h1 {
-      font-size: 2em;
-      margin-bottom: 10px;
-    }
-    h2 {
-      font-size: 1.5em;
-      margin-bottom: 20px;
-    }
-    .edits-section {
-      width: 100%;
-      max-width: 1200px;
-      margin-bottom: 40px;
-    }
-    .edits-section h2 {
-      margin-bottom: 10px;
-    }
-    .scroll-videos {
-      display: flex;
-      overflow-x: auto;
-      gap: 12px;
-      padding: 10px 0;
-    }
-    .scroll-videos video {
-      width: 280px;
-      border-radius: 10px;
-      flex-shrink: 0;
-      background: #000;
-    }
-    .main-row {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      max-width: 1200px;
-      margin-bottom: 30px;
+      padding: 12px 24px;
+      background: #1a1a1a;
       gap: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.7);
     }
-    .side-box {
-      flex: 1;
-      background: #1e1e1e;
-      padding: 20px;
+    header img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+    header h1 {
+      font-size: 2.2rem;
+      margin: 0;
+      user-select: none;
+    }
+    main {
+      flex-grow: 1;
+      display: flex;
+      padding: 20px 40px;
+      gap: 40px;
+      overflow: hidden;
+    }
+    /* 3 columns */
+    .left, .middle, .right {
+      height: 100%;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      background: #181818;
       border-radius: 12px;
-      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
     }
-    .center-box {
-      flex: 2;
+    .left {
+      flex: 1.3;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 20px;
+      scroll-snap-type: y mandatory;
+      overflow-y: scroll;
+    }
+    .left video {
+      width: 100%;
+      border-radius: 12px;
+      scroll-snap-align: start;
+      background: black;
+    }
+    .middle {
+      flex: 1;
+      background: #202020;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .middle h2 {
+      margin-top: 0;
+      font-size: 1.7rem;
+      user-select: none;
     }
     .buttons {
       display: flex;
-      gap: 20px;
-      margin-bottom: 20px;
+      gap: 15px;
+      margin-bottom: 25px;
     }
     button {
       background: linear-gradient(to right, #444, #666);
@@ -79,76 +91,92 @@
       font-size: 16px;
       cursor: pointer;
       transition: 0.3s;
+      flex: 1;
     }
     button:hover {
       transform: scale(1.05);
       background: linear-gradient(to right, #777, #aaa);
     }
     .content {
-      max-width: 700px;
-      width: 100%;
-    }
-    .video-container {
-      margin-top: 30px;
-    }
-    pre {
-      background: #1e1e1e;
+      flex-grow: 1;
+      background: #121212;
+      border-radius: 12px;
       padding: 15px;
-      border-radius: 10px;
       font-family: monospace;
       font-size: 14px;
       white-space: pre-wrap;
+      overflow-y: auto;
+    }
+    /* Right side */
+    .right {
+      flex: 0.9;
+      background: #202020;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      user-select: none;
+      text-align: center;
+    }
+    .right h2 {
+      margin: 0;
+      font-size: 1.6rem;
+    }
+    .right button {
+      padding: 14px 28px;
+      font-weight: 700;
+      font-size: 18px;
+      background: #7289da;
+      border-radius: 10px;
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.25s ease;
+      box-shadow: 0 0 20px #7289daaa;
+    }
+    .right button:hover {
+      background: #5b6eae;
+      box-shadow: 0 0 30px #7289daee;
     }
   </style>
 </head>
 <body>
-  <h1>✨ Sparx Installation Help ✨</h1>
 
-  <!-- Edits Scroll Carousel -->
-  <div class="edits-section">
-    <h2>🎞️ Watch Some Edits</h2>
-    <div class="scroll-videos">
-      <video src="video1.mp4" controls></video>
-      <video src="video2.mp4" controls></video>
-      <video src="video3.mp4" controls></video>
-      <video src="video4.mp4" controls></video>
+<header>
+  <img src="icon.png" alt="Sparx Icon" />
+  <h1>Sparx Installation Help</h1>
+</header>
+
+<main>
+  <section class="left" aria-label="Edits videos scrollable section">
+    <video controls src="video1.mp4" title="Edit Video 1"></video>
+    <video controls src="video2.mp4" title="Edit Video 2"></video>
+    <video controls src="video3.mp4" title="Edit Video 3"></video>
+    <video controls src="video4.mp4" title="Edit Video 4"></video>
+  </section>
+
+  <section class="middle" aria-label="Installation Guide section">
+    <h2>Installation Guide</h2>
+    <div class="buttons">
+      <button onclick="showInstructions()">📖 Text Instructions</button>
+      <button onclick="showVideo()">🎥 Watch Video</button>
     </div>
-  </div>
-
-  <!-- Install Guide Heading -->
-  <h2>📦 Installation Guide</h2>
-
-  <div class="main-row">
-    <!-- Left: Placeholder or empty box (you can add more features later!) -->
-    <div class="side-box">
-      <h3>More Stuff Coming Soon!</h3>
-      <p>👀 This side is for future features or bonus content.</p>
+    <div class="content" id="contentBox">
+      <!-- Dynamic content will be injected here -->
     </div>
+  </section>
 
-    <!-- Center: Main Buttons -->
-    <div class="center-box">
-      <div class="buttons">
-        <button onclick="showInstructions()">📖 Text Instructions</button>
-        <button onclick="showVideo()">🎥 Watch Video</button>
-      </div>
-      <div class="content" id="contentBox">
-        <!-- Dynamic content will be injected here -->
-      </div>
-    </div>
+  <section class="right" aria-label="Discord join section">
+    <h2>Join Our Discord</h2>
+    <button onclick="window.open('https://discord.gg/fgQ7KN2gTV', '_blank', 'noopener')">Join Now</button>
+  </section>
+</main>
 
-    <!-- Right: Discord Join -->
-    <div class="side-box">
-      <h3>💬 Join Our Discord</h3>
-      <p>Hang out with the crew, ask questions, or just vibe 🎧</p>
-      <button onclick="window.open('https://discord.gg/fgQ7KN2gTV', '_blank')">Join Discord</button>
-    </div>
-  </div>
-
-  <script>
-    function showInstructions() {
-      document.getElementById('contentBox').innerHTML = `
-        <h2>Install as a Chrome Extension (step-by-step)</h2>
-        <pre>
+<script>
+  function showInstructions() {
+    document.getElementById('contentBox').textContent = `
 1. Extract the downloaded ZIP file.
 2. Open Google Chrome.
 3. Go to chrome://extensions
@@ -156,18 +184,18 @@
 5. Click "Load unpacked".
 6. Select the folder you extracted.
 7. You're all set! 🎉
-        </pre>
-      `;
-    }
+    `;
+  }
 
-    function showVideo() {
-      document.getElementById('contentBox').innerHTML = `
-        <h2>Video Walkthrough</h2>
-        <div class="video-container">
-          <video controls width="100%" src="VIDEO-2025-05-21-22-36-11.mp4"></video>
-        </div>
-      `;
-    }
-  </script>
+  function showVideo() {
+    document.getElementById('contentBox').innerHTML = `
+      <video controls width="100%" src="VIDEO-2025-05-21-22-36-11.mp4"></video>
+    `;
+  }
+
+  // Show instructions on page load by default
+  showInstructions();
+</script>
+
 </body>
 </html>
