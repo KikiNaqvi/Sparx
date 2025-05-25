@@ -4,13 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sparx Cheats Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
   <style>
     body {
       margin: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(135deg, #0a2540, #1e90ff);
-      color: #fff;
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(180deg, #121212, #212121, #303030);
+      color: #f0f0f0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -19,16 +21,18 @@
     }
     .container {
       text-align: center;
-      background: rgba(0, 0, 50, 0.85);
+      background: rgba(255, 255, 255, 0.03);
       padding: 40px;
       border-radius: 15px;
-      box-shadow: 0 0 30px #00ffee;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
       max-width: 90%;
-      width: 400px;
+      width: 420px;
+      backdrop-filter: blur(8px);
     }
     h1 {
       font-size: 2em;
       margin-bottom: 10px;
+      text-shadow: 0 0 10px #00ccff;
     }
     input {
       padding: 12px;
@@ -38,39 +42,47 @@
       font-size: 16px;
       margin-top: 15px;
       outline: none;
+      background: rgba(255, 255, 255, 0.08);
+      color: #eee;
+      font-family: 'Poppins', sans-serif;
     }
     button {
       margin-top: 20px;
       padding: 12px 30px;
-      background: linear-gradient(45deg, #00ffee, #00ccff);
+      background: linear-gradient(to right, #333, #555);
       border: none;
       border-radius: 8px;
       font-size: 16px;
       font-weight: bold;
-      color: #000;
+      color: #eee;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.3s ease;
+      font-family: 'Rubik', sans-serif;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
     }
     button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px #00ffff;
+      transform: scale(1.07);
+      background: linear-gradient(to right, #666, #999);
+      box-shadow: 0 0 18px rgba(255, 255, 255, 0.1), 0 0 8px rgba(255, 255, 255, 0.2) inset;
     }
     .message {
       margin-top: 20px;
-      font-weight: bold;
-      min-height: 1.5em;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: #eee;
+      word-break: break-word;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.1);
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 class="sparkle">✨ Sparx Cheats Portal ✨</h1>
+    <h1>✨ Sparx Cheats Portal ✨</h1>
     <p>Enter your name to unlock cheat mode:</p>
-    <!-- Real logging POST to Google Apps Script with hidden iframe so no CORS -->
     <form id="cheatForm" action="https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec" method="POST" target="hidden_iframe">
       <input type="text" name="username" id="username" required />
       <input type="hidden" name="device" id="device" />
-      <button type="submit">Activate</button>
+      <button type="submit"><i class="fa fa-lock-open"></i> Activate</button>
     </form>
     <iframe name="hidden_iframe" style="display:none;"></iframe>
     <div class="message" id="feedbackMsg"></div>
@@ -81,12 +93,11 @@
     const msg = document.getElementById('feedbackMsg');
     const deviceInput = document.getElementById('device');
 
-    // Friendly device detection
     function getFriendlyDevice() {
       const ua = navigator.userAgent.toLowerCase();
       if (ua.includes("iphone")) return "iPhone";
       if (ua.includes("ipad")) return "iPad";
-      if (ua.includes("macintosh") || ua.includes("mac os")) return "MacBook";
+      if (ua.includes("macintosh")) return "MacBook";
       if (ua.includes("windows")) return "Windows PC";
       if (ua.includes("linux") && !ua.includes("android")) return "Linux Machine";
       if (ua.includes("android")) {
@@ -96,47 +107,41 @@
       }
       return "Unknown";
     }
+
     deviceInput.value = getFriendlyDevice();
 
-    // This should be your real GitHub Actions webhook endpoint (replace!)
-    const webhookURL = "https://api.github.com/repos/kikinaqvi/Sparx/dispatches";
-
     form.addEventListener('submit', async (e) => {
-  e.preventDefault();
+      e.preventDefault();
 
-  msg.style.color = "#00ffcc";
-  msg.textContent = "⏳ Logging your info and triggering creation...";
+      msg.style.color = "#00ffcc";
+      msg.textContent = "⏳ Logging your info and triggering creation...";
 
-  const name = document.getElementById('username').value.trim();
-  if (!name) {
-    msg.style.color = "salmon";
-    msg.textContent = "❌ Please enter a name.";
-    return;
-  }
+      const name = document.getElementById('username').value.trim();
+      if (!name) {
+        msg.style.color = "salmon";
+        msg.textContent = "❌ Please enter a name.";
+        return;
+      }
 
-  try {
-    // Submit to Google Apps Script only
-    const response = await fetch(form.action, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        username: name,
-        device: deviceInput.value
-      })
+      try {
+        await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            username: name,
+            device: deviceInput.value
+          })
+        });
+
+        msg.textContent = "🔄 Name sent!";
+        downloadCheat();
+
+      } catch (error) {
+        msg.style.color = "salmon";
+        msg.textContent = "❌ Error: " + error.message;
+      }
     });
 
-    if (!response.ok) throw new Error("Failed to log info");
-
-    const safeName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    msg.textContent = "🔄 Name sent!";
-    downloadCheat();
-
-  } catch (error) {
-    msg.style.color = "salmon";
-    msg.textContent = "❌ Error: " + error.message;
-    console.error(error);
-  }
-});
     function downloadCheat() {
       const link = document.createElement('a');
       link.href = 'SparxStuff.zip';
@@ -144,6 +149,9 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      setTimeout(() => {
+        window.location.href = "install.html";
+      }, 500);
     }
   </script>
 </body>
