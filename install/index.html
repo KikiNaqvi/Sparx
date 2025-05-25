@@ -18,7 +18,31 @@
     }
     h1 {
       font-size: 2em;
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-size: 1.5em;
       margin-bottom: 20px;
+    }
+    .edits-section {
+      width: 100%;
+      max-width: 1200px;
+      margin-bottom: 40px;
+    }
+    .edits-section h2 {
+      margin-bottom: 10px;
+    }
+    .scroll-videos {
+      display: flex;
+      overflow-x: auto;
+      gap: 12px;
+      padding: 10px 0;
+    }
+    .scroll-videos video {
+      width: 280px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      background: #000;
     }
     .main-row {
       display: flex;
@@ -75,33 +99,30 @@
       font-size: 14px;
       white-space: pre-wrap;
     }
-    .scroll-videos {
-      display: flex;
-      overflow-x: auto;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .scroll-videos video {
-      width: 200px;
-      border-radius: 10px;
-      flex-shrink: 0;
-    }
   </style>
 </head>
 <body>
-  <h1>📦 Installation Guide</h1>
+  <h1>✨ Sparx Installation Help ✨</h1>
+
+  <!-- Edits Scroll Carousel -->
+  <div class="edits-section">
+    <h2>🎞️ Watch Some Edits</h2>
+    <div class="scroll-videos">
+      <video src="video1.mp4" controls></video>
+      <video src="video2.mp4" controls></video>
+      <video src="video3.mp4" controls></video>
+      <video src="video4.mp4" controls></video>
+    </div>
+  </div>
+
+  <!-- Install Guide Heading -->
+  <h2>📦 Installation Guide</h2>
 
   <div class="main-row">
-    <!-- Left: Watch Some Edits -->
+    <!-- Left: Placeholder or empty box (you can add more features later!) -->
     <div class="side-box">
-      <h2>🎞️ Watch Some Edits</h2>
-      <button onclick="window.location.href='/edits'">Go to Edits Page</button>
-      <div class="scroll-videos">
-        <video src="video1.mp4" controls></video>
-        <video src="video2.mp4" controls></video>
-        <video src="video3.mp4" controls></video>
-        <video src="video4.mp4" controls></video>
-      </div>
+      <h3>More Stuff Coming Soon!</h3>
+      <p>👀 This side is for future features or bonus content.</p>
     </div>
 
     <!-- Center: Main Buttons -->
@@ -117,7 +138,7 @@
 
     <!-- Right: Discord Join -->
     <div class="side-box">
-      <h2>💬 Join Our Discord</h2>
+      <h3>💬 Join Our Discord</h3>
       <p>Hang out with the crew, ask questions, or just vibe 🎧</p>
       <button onclick="window.open('https://discord.gg/fgQ7KN2gTV', '_blank')">Join Discord</button>
     </div>
