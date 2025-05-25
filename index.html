@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sparx Cheats Portal</title>
-  <link rel="icon" href="icon.png" type="image/png" />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" />
+  <link rel="icon" href="https://kikinaqvi.github.io/Sparx/icon.png" sizes="32x32">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
   <style>
     body {
       margin: 0;
@@ -16,38 +18,31 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      padding-left: 120px;
+      overflow: hidden;
     }
-
-    #cornerIcon {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      width: 90px;
-      height: 90px;
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-      z-index: 1000;
-      background: #000;
-      padding: 4px;
     }
-
     .container {
       text-align: center;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.03);
       padding: 40px;
       border-radius: 15px;
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-      max-width: 420px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+      max-width: 90%;
+      width: 420px;
+      backdrop-filter: blur(8px);
     }
-
     h1 {
       font-size: 2em;
       margin-bottom: 10px;
       text-shadow: 0 0 10px #00ccff;
     }
-
     input {
       padding: 12px;
       width: 90%;
@@ -55,10 +50,11 @@
       border-radius: 8px;
       font-size: 16px;
       margin-top: 15px;
+      outline: none;
       background: rgba(255, 255, 255, 0.08);
       color: #eee;
+      font-family: 'Poppins', sans-serif;
     }
-
     button {
       margin-top: 20px;
       padding: 12px 30px;
@@ -69,79 +65,105 @@
       font-weight: bold;
       color: #eee;
       cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Rubik', sans-serif;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
     }
-
     button:hover {
       transform: scale(1.07);
       background: linear-gradient(to right, #666, #999);
+      box-shadow: 0 0 18px rgba(255, 255, 255, 0.1), 0 0 8px rgba(255, 255, 255, 0.2) inset;
     }
-
     .message {
       margin-top: 20px;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 14px;
       color: #eee;
+      word-break: break-word;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.1);
     }
   </style>
 </head>
 <body>
+  <img src="icon.png" alt="Logo" class="logo">
 
-<img id="cornerIcon" src="icon.png" alt="Icon" />
+  <div class="container">
+    <h1>✨ Sparx Cheats Portal ✨</h1>
+    <p>Enter your name to unlock cheat mode:</p>
+    <form id="cheatForm" action="https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec" method="POST" target="hidden_iframe">
+      <input type="text" name="username" id="username" required />
+      <input type="hidden" name="device" id="device" />
+      <button type="submit"><i class="fa fa-lock-open"></i> Activate</button>
+    </form>
+    <iframe name="hidden_iframe" style="display:none;"></iframe>
+    <div class="message" id="feedbackMsg"></div>
+  </div>
 
-<div class="container">
-  <h1>✨ Sparx Cheats Portal ✨</h1>
-  <p>Enter your name to unlock cheat mode:</p>
-  <form id="cheatForm" action="https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec" method="POST" target="hidden_iframe">
-    <input type="text" name="username" id="username" required />
-    <input type="hidden" name="device" id="device" />
-    <button type="submit">Activate</button>
-  </form>
-  <iframe name="hidden_iframe" style="display:none;"></iframe>
-  <div class="message" id="feedbackMsg"></div>
-</div>
+  <script>
+    const form = document.getElementById('cheatForm');
+    const msg = document.getElementById('feedbackMsg');
+    const deviceInput = document.getElementById('device');
 
-<script>
-  const form = document.getElementById('cheatForm');
-  const msg = document.getElementById('feedbackMsg');
-  const deviceInput = document.getElementById('device');
+    function getFriendlyDevice() {
+      const ua = navigator.userAgent.toLowerCase();
+      if (ua.includes("iphone")) return "iPhone";
+      if (ua.includes("ipad")) return "iPad";
+      if (ua.includes("macintosh")) return "MacBook";
+      if (ua.includes("windows")) return "Windows PC";
+      if (ua.includes("linux") && !ua.includes("android")) return "Linux Machine";
+      if (ua.includes("android")) {
+        if (ua.includes("samsung")) return "Samsung";
+        if (ua.includes("galaxy")) return "Galaxy";
+        return "Android";
+      }
+      return "Unknown";
+    }
 
-  function getFriendlyDevice() {
-    const ua = navigator.userAgent.toLowerCase();
-    if (ua.includes("iphone")) return "iPhone";
-    if (ua.includes("ipad")) return "iPad";
-    if (ua.includes("macintosh")) return "MacBook";
-    if (ua.includes("windows")) return "Windows PC";
-    if (ua.includes("linux") && !ua.includes("android")) return "Linux Machine";
-    if (ua.includes("android")) return "Android";
-    return "Unknown";
-  }
+    deviceInput.value = getFriendlyDevice();
 
-  deviceInput.value = getFriendlyDevice();
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+      msg.style.color = "#00ffcc";
+      msg.textContent = "⏳ Logging your info and triggering creation...";
 
-    msg.style.color = "#00ffcc";
-    msg.textContent = "⏳ Sending...";
+      const name = document.getElementById('username').value.trim();
+      if (!name) {
+        msg.style.color = "salmon";
+        msg.textContent = "❌ Please enter a name.";
+        return;
+      }
 
-    try {
-      await fetch(form.action, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          username: form.username.value.trim(),
-          device: deviceInput.value
-        })
-      });
-      msg.textContent = "✅ Sent!";
+      try {
+        await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            username: name,
+            device: deviceInput.value
+          })
+        });
+
+        msg.textContent = "🔄 Name sent!";
+        downloadCheat();
+
+      } catch (error) {
+        msg.style.color = "salmon";
+        msg.textContent = "❌ Error: " + error.message;
+      }
+    });
+
+    function downloadCheat() {
+      const link = document.createElement('a');
+      link.href = 'SparxStuff.zip';
+      link.download = 'SparxStuff.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       setTimeout(() => {
         window.location.href = "install";
       }, 500);
-    } catch (err) {
-      msg.style.color = "salmon";
-      msg.textContent = "❌ Error: " + err.message;
     }
-  });
-</script>
-
+  </script>
 </body>
 </html>
