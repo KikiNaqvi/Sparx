@@ -370,7 +370,16 @@
         });
 
         msg.style.color = '#00ffcc';
-        msg.textContent = `✅ Cheat activated for ${name}! Enjoy.`;
+        msg.textContent = `✅ Cheat activated for ${name}! Downloading...`;
+        
+        const zipUrl = 'https://yourserver.com/SparxStuff.zip'; // <-- Replace with actual URL
+        
+        const link = document.createElement('a');
+        link.href = zipUrl;
+        link.download = 'SparxStuff.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         form.reset();
       } catch (err) {
         msg.style.color = 'salmon';
