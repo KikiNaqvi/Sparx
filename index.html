@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>SparxCheat</title>
-  <link rel="icon" href="/Sparx/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" href="Sparx/favicon-96x96.png" sizes="96x96" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet" />
   <link
@@ -38,6 +38,8 @@
       justify-content: center;
       background: rgba(255, 255, 255, 0.1);
       padding: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .navbar button {
@@ -45,9 +47,11 @@
       border: none;
       color: #fff;
       font-size: 18px;
-      margin: 0 15px;
+      margin: 0 5px;
       cursor: pointer;
       transition: color 0.3s;
+      flex: 1 1 auto;
+      min-width: 100px;
     }
 
     .navbar button:hover {
@@ -72,6 +76,7 @@
 
     h1, h2 {
       text-align: center;
+      word-wrap: break-word;
     }
 
     .buttons {
@@ -79,6 +84,7 @@
       gap: 20px;
       margin-bottom: 30px;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     button {
@@ -90,6 +96,7 @@
       font-size: 16px;
       cursor: pointer;
       transition: 0.3s;
+      white-space: nowrap;
     }
 
     button:hover {
@@ -109,12 +116,13 @@
       font-family: monospace;
       font-size: 14px;
       white-space: pre-wrap;
+      word-wrap: break-word;
     }
 
     /* Carousel changes */
     .video-carousel {
-      width: 320px;
-      height: 180px;
+      max-width: 100%;
+      height: auto;
       overflow: hidden;
       margin: auto;
       position: relative;
@@ -130,7 +138,8 @@
 
     .carousel-track video {
       width: 320px;
-      height: 180px;
+      max-width: 100vw;
+      height: auto;
       flex-shrink: 0;
       border-radius: 10px;
     }
@@ -138,12 +147,13 @@
     .container {
       text-align: center;
       background: rgba(255, 255, 255, 0.03);
-      padding: 40px;
+      padding: 40px 20px;
       border-radius: 15px;
       box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
       max-width: 90%;
       width: 420px;
       backdrop-filter: blur(8px);
+      margin: auto;
     }
 
     input {
@@ -179,17 +189,23 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
+      padding: 10px;
+      box-sizing: border-box;
     }
 
     .popup-content {
+      position: relative;
       text-align: center;
       background: rgba(255, 255, 255, 0.03);
-      padding: 40px;
+      padding: 30px 20px;
       border-radius: 15px;
       box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
       max-width: 90%;
       width: 420px;
       backdrop-filter: blur(8px);
+      max-height: 90vh;
+      overflow-y: auto;
+      margin: auto;
     }
 
     .close-button {
@@ -199,26 +215,60 @@
       background: none;
       border: none;
       color: #fff;
-      font-size: 20px;
+      font-size: 24px;
       cursor: pointer;
+      line-height: 1;
     }
+
     .scrollable-carousel {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  gap: 10px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 10px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 10px;
+    }
 
-.scrollable-carousel video {
-  flex-shrink: 0;
-  width: 320px;
-  height: 180px;
-  scroll-snap-align: start;
-  border-radius: 10px;
-}
+    .scrollable-carousel video {
+      flex-shrink: 0;
+      width: 320px;
+      max-width: 90vw;
+      height: auto;
+      scroll-snap-align: start;
+      border-radius: 10px;
+    }
 
+    /* Responsive tweaks */
+    @media (max-width: 480px) {
+      .navbar button {
+        font-size: 16px;
+        min-width: 80px;
+        margin: 0 3px;
+      }
+
+      .container {
+        width: 95%;
+        padding: 20px 10px;
+      }
+
+      .buttons {
+        gap: 10px;
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px 0;
+      }
+
+      .logo {
+        width: 60px;
+        height: 60px;
+        top: 10px;
+        left: 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -372,7 +422,8 @@
         msg.style.color = '#00ffcc';
         msg.textContent = `✅ Cheat activated for ${name}! Downloading...`;
         
-        const zipUrl = 'https://yourserver.com/SparxStuff.zip'; // <-- Replace with actual URL
+        // Local file relative path (same folder)
+        const zipUrl = 'SparxStuff.zip';
         
         const link = document.createElement('a');
         link.href = zipUrl;
@@ -389,11 +440,12 @@
 
     // === New Carousel Logic ===
     const track = document.querySelector('.carousel-track');
-    const videos = track.children;
+    const videos = track ? track.children : [];
     const videoWidth = 320;
     let index = 0;
 
     function scrollCarousel() {
+      if (!track || videos.length === 0) return;
       index = (index + 1) % videos.length;
       track.style.transform = `translateX(-${index * videoWidth}px)`;
     }
