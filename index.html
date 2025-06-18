@@ -2,458 +2,571 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SparxCheat</title>
-  <link rel="icon" href="Sparx/favicon-96x96.png" sizes="96x96" />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet" />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    crossorigin="anonymous"
-  />
+  <link rel="icon" type="image/png" href="https://www.itskiyan.xyz/icon.png" />
   <style>
-    body {
-      margin: 0;
-      font-family: 'Rubik', sans-serif;
-      background: linear-gradient(180deg, #121212, #212121, #303030);
-      color: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
+  /* ----- Background & Base ----- */
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="2" fill="white" fill-opacity="0.15"/></svg>') repeat;
+    color: #eee;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    overflow-x: hidden;
+  }
 
-    .logo {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-    }
+  /* ----- Header & Tabs ----- */
+  header {
+    display: flex;
+    align-items: center;
+    background: #1f1f1fdd;
+    backdrop-filter: saturate(180%) blur(10px);
+    padding: 15px 30px;
+    gap: 30px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.7);
+  }
 
-    .navbar {
-      display: flex;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 10px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+  header img.logo {
+    height: 48px;
+    width: 48px;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+  }
+  header img.logo:hover {
+    transform: rotate(15deg) scale(1.1);
+  }
 
-    .navbar button {
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      margin: 0 5px;
-      cursor: pointer;
-      transition: color 0.3s;
-      flex: 1 1 auto;
-      min-width: 100px;
-    }
+  nav {
+    display: flex;
+    gap: 32px;
+    flex-grow: 1;
+  }
 
-    .navbar button:hover {
-      color: #00ccff;
-    }
+  nav button {
+    background: none;
+    border: none;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ccc;
+    padding: 10px 20px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.35s ease;
+    position: relative;
+  }
 
-    .section {
-      flex: 1;
-      padding: 40px 20px;
-      overflow-y: auto;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
+  nav button:hover {
+    color: #fff;
+    filter: drop-shadow(0 0 10px #39f);
+  }
 
-    .middle {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+  nav button.active {
+    color: #fff;
+    filter: drop-shadow(0 0 14px #4de);
+  }
 
-    h1, h2 {
-      text-align: center;
-      word-wrap: break-word;
-    }
+  /* Color coding for tabs */
+  nav button#tab-maths.active {
+    color: #3fa9f5;
+    text-shadow: 0 0 6px #3fa9f5aa;
+  }
+  nav button#tab-reader.active {
+    color: #a56cff;
+    text-shadow: 0 0 8px #a56cffcc;
+  }
+  nav button#tab-kahoot.active {
+    color: #b168ff;
+    text-shadow: 0 0 8px #b168ffcc;
+  }
+  nav button#tab-signin.active {
+    color: #fff;
+    text-shadow: 0 0 6px #fff;
+  }
 
-    .buttons {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 30px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+  /* ----- Main Content Area ----- */
+  main {
+    flex-grow: 1;
+    padding: 30px 40px;
+    overflow-y: auto;
+  }
 
-    button {
-      background: linear-gradient(to right, #444, #666);
-      border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s;
-      white-space: nowrap;
-    }
+  section {
+    display: none;
+    animation: fadeIn 1s ease forwards;
+  }
+  section.active {
+    display: block;
+  }
 
-    button:hover {
-      transform: scale(1.05);
-      background: linear-gradient(to right, #777, #aaa);
-    }
+  /* ----- Animations ----- */
+  @keyframes fadeIn {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
 
-    .content {
-      max-width: 700px;
-      width: 100%;
-    }
+  /* ----- Section specific styling ----- */
 
-    pre {
-      background: #1e1e1e;
-      padding: 15px;
-      border-radius: 10px;
-      font-family: monospace;
-      font-size: 14px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
+  /* Maths Tab */
+  #maths {
+    border-left: 6px solid #3fa9f5;
+    padding-left: 25px;
+  }
+  #maths h1 {
+    font-size: 3.4rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px #3fa9f5aa;
+  }
+  #maths p {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+  }
+  #maths .info-block {
+    background: #2a2a2acc;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 0 20px #3fa9f5bb inset;
+    position: relative;
+  }
+  #maths .info-block:hover {
+    box-shadow: 0 0 40px #3fa9f5dd inset;
+  }
+  #maths img.sticker {
+    width: 120px;
+    animation: floatUpDown 4s ease-in-out infinite;
+  }
 
-    /* Carousel changes */
-    .video-carousel {
-      max-width: 100%;
-      height: auto;
-      overflow: hidden;
-      margin: auto;
-      position: relative;
-      border-radius: 10px;
-      box-shadow: 0 0 15px #00ccff66;
-    }
+  /* Reader Tab */
+  #reader {
+    border-left: 6px solid #a56cff;
+    padding-left: 25px;
+  }
+  #reader h1 {
+    font-size: 3.4rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px #a56cffcc;
+  }
+  #reader p {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+  }
+  #reader .info-block {
+    background: #2a2a2acc;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 0 20px #a56cffbb inset;
+    position: relative;
+  }
+  #reader .info-block:hover {
+    box-shadow: 0 0 40px #a56cffdd inset;
+  }
+  #reader img.sticker {
+    width: 120px;
+    animation: floatSideToSide 5s ease-in-out infinite;
+  }
 
-    .carousel-track {
-      display: flex;
-      width: max-content;
-      transition: transform 0.5s ease;
-    }
+  /* Kahoot Tab */
+  #kahoot {
+    border-left: 6px solid #b168ff;
+    padding-left: 25px;
+  }
+  #kahoot h1 {
+    font-size: 3.4rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px #b168ffcc;
+  }
+  #kahoot p {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+  }
+  #kahoot .info-block {
+    background: #2a2a2acc;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 0 20px #b168ffbb inset;
+    position: relative;
+  }
+  #kahoot .info-block:hover {
+    box-shadow: 0 0 40px #b168ffdd inset;
+  }
+  #kahoot img.sticker {
+    width: 120px;
+    animation: floatBounce 4s ease-in-out infinite;
+  }
 
-    .carousel-track video {
-      width: 320px;
-      max-width: 100vw;
-      height: auto;
-      flex-shrink: 0;
-      border-radius: 10px;
-    }
+  /* Sign In Tab */
+  #signin {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding-left: 25px;
+  flex-direction: column;
+  }
+  #signin.active {
+    display: flex;
+  }
+  #signin h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #ccc;
+  }
+  #signin form {
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  #signin label {
+    font-size: 1.3rem;
+    color: #999;
+  }
+  #signin input {
+    padding: 12px 15px;
+    font-size: 1.2rem;
+    border-radius: 12px;
+    border: 1.5px solid #444;
+    background: #222;
+    color: #eee;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  #signin input:focus {
+    border-color: #39f;
+    box-shadow: 0 0 10px #39f8;
+  }
+  #signin button {
+    padding: 15px;
+    font-size: 1.4rem;
+    border: none;
+    border-radius: 18px;
+    background: #39f;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.4s ease;
+  }
+  #signin button:hover {
+    background: #0055ff;
+    box-shadow: 0 0 18px #39f;
+  }
 
-    .container {
-      text-align: center;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 40px 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
-      max-width: 90%;
-      width: 420px;
-      backdrop-filter: blur(8px);
-      margin: auto;
-    }
+  /* ----- Animations for stickers ----- */
+  @keyframes floatUpDown {
+    0%, 100% { transform: translateY(0);}
+    50% { transform: translateY(-20px);}
+  }
+  @keyframes floatSideToSide {
+    0%, 100% { transform: translateX(0);}
+    50% { transform: translateX(20px);}
+  }
+  @keyframes floatBounce {
+    0%, 100% { transform: translateY(0);}
+    25% { transform: translateY(-15px);}
+    50% { transform: translateY(0);}
+    75% { transform: translateY(-10px);}
+  }
 
-    input {
-      padding: 12px;
-      width: 90%;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      margin-top: 15px;
-      outline: none;
-      background: rgba(255, 255, 255, 0.08);
-      color: #eee;
-      font-family: 'Poppins', sans-serif;
-    }
+  /* ----- Footer ----- */
+  footer {
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 14px;
+    color: #555;
+  }
 
-    .message {
-      margin-top: 20px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      color: #eee;
-      word-break: break-word;
-      text-shadow: 0 0 6px rgba(255, 255, 255, 0.1);
-    }
-
-    .popup-container {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-
-    .popup-content {
-      position: relative;
-      text-align: center;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 30px 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
-      max-width: 90%;
-      width: 420px;
-      backdrop-filter: blur(8px);
-      max-height: 90vh;
-      overflow-y: auto;
-      margin: auto;
-    }
-
-    .close-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 24px;
-      cursor: pointer;
-      line-height: 1;
-    }
-
-    .scrollable-carousel {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      gap: 10px;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 10px;
-    }
-
-    .scrollable-carousel video {
-      flex-shrink: 0;
-      width: 320px;
-      max-width: 90vw;
-      height: auto;
-      scroll-snap-align: start;
-      border-radius: 10px;
-    }
-
-    /* Responsive tweaks */
-    @media (max-width: 480px) {
-      .navbar button {
-        font-size: 16px;
-        min-width: 80px;
-        margin: 0 3px;
-      }
-
-      .container {
-        width: 95%;
-        padding: 20px 10px;
-      }
-
-      .buttons {
-        gap: 10px;
-        flex-direction: column;
-      }
-
-      button {
-        width: 100%;
-        padding: 12px 0;
-      }
-
-      .logo {
-        width: 60px;
-        height: 60px;
-        top: 10px;
-        left: 10px;
-      }
-    }
-  </style>
+  /* ----- Scrollbar styling ----- */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #121212;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3fa9f5aa;
+    border-radius: 20px;
+    border: 3px solid #121212;
+  }
+</style>
 </head>
 <body>
-  <img src="icon.png" alt="Logo" class="logo" />
+  <header>
+  <img class="logo" src="https://kikinaqvi.github.io/Sparx/icon.png" alt="Sparx Logo" title="Sparx Cheat Hub" style="height: 60px; width: 60px;" />
+  <nav style="justify-content: center;">
+    <button id="tab-maths" class="active" aria-label="Sparx Maths">➗ Sparx Maths</button>
+    <button id="tab-reader" aria-label="Sparx Reader">📖 Sparx Reader</button>
+    <button id="tab-kahoot" aria-label="Kahoot">🎯 Kahoot</button>
+    <button id="tab-signin" aria-label="Sign In">🔐 Sign In</button>
+  </nav>
+</header>
 
-  <div class="navbar">
-    <button onclick="showSection('activities')">🎬 Activities</button>
-    <button onclick="showSection('installation')">📦 Installation Guide</button>
-    <button onclick="showSection('discord')">🫂 Join Discord</button>
-    <button onclick="showSection('cheats')">✨ Cheats Portal</button>
-  </div>
+<main>
+  <!-- Sparx Maths -->
+  <section id="maths" class="active" aria-label="Sparx Maths Section">
+    <h1>➗ Sparx Maths Cheats</h1>
+    <p>Welcome to <strong>Sparx Cheat Hub</strong> — the ultimate cheat extension for your Sparx Maths assignments! 💙✨</p>
 
-  <div class="section" id="cheats">
-    <div class="container">
-      <h1>✨ Sparx Cheats Portal ✨</h1>
-      <p>Enter your name to unlock cheat mode:</p>
-      <form
-        id="cheatForm"
-        action="https://script.google.com/macros/s/AKfycbxN8gqD_XSlM8fIzedVgFfp5GXadH616bOmbuuEfg9BTdyRRU5WUqCCPFT6sAyyAfJQfQ/exec"
-        method="POST"
-        target="hidden_iframe"
-      >
-        <input type="text" name="username" id="username" required />
-        <input type="hidden" name="device" id="device" />
-        <div style="margin-top: 20px;">
-          <button type="submit"><i class="fa fa-lock-open"></i> Activate</button>
-        </div>
-      </form>
-      <iframe name="hidden_iframe" style="display:none;"></iframe>
-      <div class="message" id="feedbackMsg"></div>
+    <div class="info-block">
+      <h2>How it works 🔍</h2>
+      <p>The extension reads your Sparx Maths questions, automates answering using smart algorithms, and lets you breeze through homework faster than ever!</p>
+      <img src="https://sparxext.com/assets/services/sparxmaths.jpg" alt="Math magic" class="sticker" style="border-radius: 18px; overflow: hidden;" />
     </div>
-  </div>
 
-  <div class="section" id="activities">
-    <div class="container">
-      <h2>🎬 Watch Some Edits</h2>
-    <div class="video-carousel scrollable-carousel">
-     <video controls src="media/video1.mp4"></video>
-     <video controls src="media/video2.mp4"></video>
-     <video controls src="media/video3.mp4"></video>
-     <video controls src="media/video4.mp4"></video>
+    <div class="info-block">
+      <h2>Features ⚡️</h2>
+      <ul>
+        <li>💡 Automatic question detection & answer clicking</li>
+        <li>🚀 Fast, reliable API integration</li>
+        <li>🧠 Smart answer suggestions with AI assistance</li>
+        <li>🎨 Beautiful & animated UI</li>
+        <li>🛡️ Anti-detection techniques</li>
+      </ul>
     </div>
-    </div>
-  </div>
 
-  <div class="section middle" id="installation">
-    <div class="container">
-      <h2>📦 Installation Guide</h2>
-      <div class="buttons">
-        <button onclick="showInstructions()">📖 Text Instructions</button>
-        <button onclick="showVideo()">🎥 Watch Video</button>
+    <div class="info-block">
+      <h2>Get started 💻</h2>
+      <p>Install the extension, open your Sparx Maths page, and watch the magic happen! No stress, just results.</p>
+      <img src="https://www.itskiyan.xyz/icon.png" alt="Coding magic" class="sticker" />
+    </div>
+  </section>
+
+  <!-- Sparx Reader -->
+  <section id="reader" aria-label="Sparx Reader Section">
+    <h1>📖 Sparx Reader Cheats</h1>
+    <p>Reading made easy and fun! Our extension turns Sparx Reader tasks into smooth sailing. 💜✨</p>
+
+    <div class="info-block">
+      <h2>How it works 🔍</h2>
+      <p>Detects reading passages, highlights answers, and auto-fills questions so you finish faster and smarter.</p>
+      <img src="https://sparxext.com/assets/services/sparxreader.jpg" alt="Reading magic" class="sticker" style="border-radius: 18px; overflow: hidden;" />
+    </div>
+
+    <div class="info-block">
+      <h2>Features ⚡️</h2>
+      <ul>
+        <li>📚 Auto-detects text & questions</li>
+        <li>✨ Smart answer autofill</li>
+        <li>🖌️ Beautiful UI with animations</li>
+        <li>🔒 Privacy-first design</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h2>Get started 💻</h2>
+      <p>Simply install, open Sparx Reader, and watch the extension work its charm!</p>
+      <img src="https://www.itskiyan.xyz/icon.png" alt="Reader magic" class="sticker" />
+    </div>
+  </section>
+
+  <!-- Kahoot -->
+  <section id="kahoot" aria-label="Kahoot Section">
+    <h1>🎯 Kahoot Cheats</h1>
+    <p>Score big with our Kahoot cheat extension! No more frantic guessing — just smart play. 💜⚡️</p>
+
+    <div class="info-block">
+      <h2>How it works 🔍</h2>
+      <p>Detects Kahoot questions and auto-selects the best answers in real-time with our fast algorithm.</p>
+      <img src="https://sparxext.com/assets/services/kahoot.webp" alt="Reading magic" class="sticker" style="border-radius: 18px; overflow: hidden;" />
+    </div>
+
+    <div class="info-block">
+      <h2>Features ⚡️</h2>
+      <ul>
+        <li>🎮 Real-time answer detection</li>
+        <li>🕹️ Fast response & auto-clicking</li>
+        <li>📈 Stats tracking & score boosting</li>
+        <li>💜 Smooth, animated UI</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h2>Get started 💻</h2>
+      <p>Install the extension and open Kahoot — the extension will handle the rest.</p>
+      <img src="https://www.itskiyan.xyz/icon.png" alt="Game magic" class="sticker" />
+    </div>
+  </section>
+
+  <!-- Sign In Section -->
+<section id="signin" aria-label="Sign In Section">
+  <div style="text-align: center; width: 100%; max-width: 500px;">
+    <h1 style="font-size: 3.5rem; color: #ccc; margin-bottom: 20px;">
+      🔐 <span id="auth-title" style="white-space: nowrap;">Sign In</span>
+    </h1>
+    <form id="auth-form" style="margin: 0 auto; display: flex; flex-direction: column; gap: 20px; align-items: stretch;">
+      <!-- Username (Only visible during sign-up) -->
+      <div id="username-field" style="display: none; flex-direction: column; align-items: stretch; gap: 20px;">
+        <label for="username" style="font-size: 1.3rem; color: #999; text-align: left;">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Your username"
+          style="padding: 15px; font-size: 1.4rem; border-radius: 12px; border: 1.5px solid #444; background: #222; color: #eee; outline: none; transition: border-color 0.3s ease;"
+        />
       </div>
-      <div class="content" id="contentBox"></div>
+
+      <label for="email" style="font-size: 1.3rem; color: #999; text-align: left;">Email address</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="you@example.com"
+        required
+        style="padding: 15px; font-size: 1.4rem; border-radius: 12px; border: 1.5px solid #444; background: #222; color: #eee; outline: none; transition: border-color 0.3s ease;"
+      />
+
+      <label for="password" style="font-size: 1.3rem; color: #999; text-align: left;">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="••••••••"
+        required
+        style="padding: 15px; font-size: 1.4rem; border-radius: 12px; border: 1.5px solid #444; background: #222; color: #eee; outline: none; transition: border-color 0.3s ease;"
+      />
+
+      <button
+        type="submit"
+        style="padding: 18px; font-size: 1.6rem; border: none; border-radius: 18px; background: #39f; color: white; font-weight: 700; cursor: pointer; transition: background-color 0.4s ease;"
+      >
+        Sign In
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 10px;">
+      <button
+        id="toggle-auth"
+        type="button"
+        style="background:none; border:none; color:#39f; cursor:pointer; font-size:1rem;"
+      >
+        Create an account
+      </button>
     </div>
   </div>
+</section>
 
-  <div class="section" id="discord">
-    <div class="container">
-      <h2>🫂 Join Our Discord</h2>
-      <button onclick="window.open('https://discord.gg/fgQ7KN2gTV')">Join Now</button>
-    </div>
-  </div>
 
-  <!-- Popups -->
-  <div class="popup-container" id="instructionsPopup">
-    <div class="popup-content">
-      <button class="close-button" onclick="closePopup('instructionsPopup')">×</button>
-      <h2>📖 Installation Instructions</h2>
-      <pre>
-1. Extract the downloaded ZIP file.
-2. Open Google Chrome.
-3. Go to chrome://extensions
-4. Turn ON "Developer Mode" (top-right).
-5. Click "Load unpacked".
-6. Select the folder you extracted.
-7. You're all set! 🎉
-      </pre>
-    </div>
-  </div>
+</main>
 
-  <div class="popup-container" id="videoPopup">
-    <div class="popup-content">
-      <button class="close-button" onclick="closePopup('videoPopup')">×</button>
-      <h2>🎥 Video Walkthrough</h2>
-      <video controls width="100%" src="media/video5.mp4"></video>
-    </div>
-  </div>
+<footer>
+  <small>© 2025 SparxCheat • Made with love by Kiyan ❤️</small>
+</footer>
 
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
-    function showSection(sectionId) {
-      const sections = document.querySelectorAll('.section');
-      sections.forEach(section => {
-        section.style.display = 'none';
-      });
-      document.getElementById(sectionId).style.display = 'flex';
+    // ————— Firebase Config —————
+    const firebaseConfig = {
+      apiKey: "AIzaSyAS-98Bz91JuQAtuOl_qsyPc7Jp1tuowOw",
+      authDomain: "hip-fuze-305914.firebaseapp.com",
+      projectId: "hip-fuze-305914",
+      storageBucket: "hip-fuze-305914.firebasestorage.app",
+      messagingSenderId: "454217699115",
+      appId: "1:454217699115:web:dbd50f2e564cf0e711ff6e",
+      measurementId: "G-R2VVQ168SP"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // ————— Cache Helpers —————
+    const CACHE_KEY = 'sparxLoggedIn';
+    function setCache(flag) {
+      localStorage.setItem(CACHE_KEY, flag ? 'true' : 'false');
+    }
+    function isCached() {
+      return localStorage.getItem(CACHE_KEY) === 'true';
     }
 
-    function showInstructions() {
-      document.getElementById('instructionsPopup').style.display = 'flex';
-    }
-
-    function showVideo() {
-      document.getElementById('videoPopup').style.display = 'flex';
-    }
-
-    function closePopup(popupId) {
-      document.getElementById(popupId).style.display = 'none';
-    }
-
-    const form = document.getElementById('cheatForm');
-    const msg = document.getElementById('feedbackMsg');
-    const deviceInput = document.getElementById('device');
-
-    function getFriendlyDevice() {
-      const ua = navigator.userAgent.toLowerCase();
-      if (ua.includes('iphone')) return 'iPhone';
-      if (ua.includes('ipad')) return 'iPad';
-      if (ua.includes('macintosh')) return 'MacBook';
-      if (ua.includes('windows')) return 'Windows PC';
-      if (ua.includes('linux') && !ua.includes('android')) return 'Linux Machine';
-      if (ua.includes('android')) {
-        if (ua.includes('samsung')) return 'Samsung';
-        if (ua.includes('galaxy')) return 'Galaxy';
-        return 'Android';
-      }
-      return 'Unknown';
-    }
-
-    deviceInput.value = getFriendlyDevice();
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      msg.style.color = '#00ffcc';
-      msg.textContent = '⏳ Logging your info and triggering creation...';
-
-      const name = document.getElementById('username').value.trim();
-      if (!name) {
-        msg.style.color = 'salmon';
-        msg.textContent = '❌ Please enter a name.';
-        return;
-      }
-
-      try {
-        await fetch(form.action, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: new URLSearchParams(new FormData(form)),
-        });
-
-        msg.style.color = '#00ffcc';
-        msg.textContent = `✅ Cheat activated for ${name}! Downloading...`;
-        
-        // Local file relative path (same folder)
-        const zipUrl = 'SparxStuff.zip';
-        
-        const link = document.createElement('a');
-        link.href = zipUrl;
-        link.download = 'SparxStuff.zip';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        form.reset();
-      } catch (err) {
-        msg.style.color = 'salmon';
-        msg.textContent = '❌ Network error, please try again.';
+    // ————— On Load: auto‑redirect if already signed in —————
+    window.addEventListener('load', () => {
+      if (isCached() && auth.currentUser) {
+        // you’re still signed in — skip straight to dashboard
+        window.location.href = 'web2.html';
       }
     });
 
-    // === New Carousel Logic ===
-    const track = document.querySelector('.carousel-track');
-    const videos = track ? track.children : [];
-    const videoWidth = 320;
-    let index = 0;
+    // Tab functionality
+  const tabs = document.querySelectorAll('nav button');
+  const sections = document.querySelectorAll('main section');
 
-    function scrollCarousel() {
-      if (!track || videos.length === 0) return;
-      index = (index + 1) % videos.length;
-      track.style.transform = `translateX(-${index * videoWidth}px)`;
-    }
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Remove active classes
+      tabs.forEach(t => t.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
 
-    setInterval(scrollCarousel, 3000);
+      // Activate clicked tab & corresponding section
+      tab.classList.add('active');
+      const id = tab.id.replace('tab-', '');
+      document.getElementById(id).classList.add('active');
+    });
+  });
 
-    // Show default section on load
-    showSection('activities');
+    const authForm      = document.getElementById('auth-form');
+    const toggleAuthBtn = document.getElementById('toggle-auth');
+    const usernameField = document.getElementById('username-field');
+    const authTitle     = document.getElementById('auth-title');
+    let isSignIn        = true;
+
+    toggleAuthBtn.addEventListener('click', () => {
+      isSignIn = !isSignIn;
+      if (isSignIn) {
+        authForm.querySelector('button[type="submit"]').textContent = 'Sign In';
+        toggleAuthBtn.textContent = 'Create an account';
+        usernameField.style.display = 'none';
+        authTitle.textContent = 'Sign In';
+      } else {
+        authForm.querySelector('button[type="submit"]').textContent = 'Create Account';
+        toggleAuthBtn.textContent = 'Already have an account? Sign In';
+        usernameField.style.display = 'flex';
+        authTitle.textContent = 'Create Account';
+      }
+    });
+
+    authForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const email    = authForm.email.value;
+      const password = authForm.password.value;
+      const username = authForm.username.value;
+
+      if (isSignIn) {
+        auth.signInWithEmailAndPassword(email, password)
+          .then(({ user }) => {
+            setCache(true);               // ← cache login
+            window.location.href = 'web2.html';
+          })
+          .catch(err => alert(`Error: ${err.message}`));
+      } else {
+        auth.createUserWithEmailAndPassword(email, password)
+          .then(({ user }) => {
+            if (username) user.updateProfile({ displayName: username });
+            return user.sendEmailVerification();
+          })
+          .then(() => {
+            alert(`Account created! Verification email sent. Please verify.`);
+            authForm.reset();
+            toggleAuthBtn.click();
+          })
+          .catch(err => alert(`Error: ${err.message}`));
+      }
+    });
+
+    // ————— Also clear cache on Firebase sign‑out (in case someone signs out elsewhere) —————
+    auth.onAuthStateChanged(user => {
+      if (!user) setCache(false);
+    });
   </script>
 </body>
 </html>
