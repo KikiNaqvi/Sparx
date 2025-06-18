@@ -545,7 +545,7 @@
         auth.signInWithEmailAndPassword(email, password)
           .then(({ user }) => {
             setCache(true);               // ← cache login
-            window.location.href = 'web2.html';
+            window.location.href = 'dashboard';
           })
           .catch(err => alert(`Error: ${err.message}`));
       } else {
