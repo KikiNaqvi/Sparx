@@ -2,7 +2,7 @@ console.log("Made by Kiyan!")
 
 // === CONFIGURATION ===
 const targetText = "SparxCheat";
-const webhookURL = "https://proxydiscord.com/api/webhooks/1385021923620028466/k0lrrZXKbX91wvPeLYjQFhxGvqfN3zsNqpty84TzSqGi2hF4o-lpXHRP289VwVeVEJkV";
+const webhookURL = "https://dcrelay.liteeagle.me/relay/5f9f3e92-d95a-4da8-a812-5efe6ec04b82";
 let username = null;
 
 function findUsername() {
