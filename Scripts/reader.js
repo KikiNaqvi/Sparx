@@ -351,7 +351,28 @@ const clickButton = (buttonText) => {
 
 // Query Gemini API
 async function queryGemini(question, options, context) {
-  const prompt = `You are given the following context and question. Select the single most relevant answer from the provided options. Do not generate anything outside of the specified options. Do not explain. Return exactly one answer string. Context: ${context} Question: ${question} Options: ${options.join(', ')} Respond with only one of the exact options listed above. Answer:`;
+  const prompt = `
+    You are an automated multiple-choice answering system.
+
+    You will receive:
+    - A reading context
+    - A question
+    - A list of possible answer options
+
+    🔒 RULES (strictly enforced):
+    - You must respond with ONE and ONLY ONE of the provided options.
+    - The response MUST match one of the options **EXACTLY** (case-insensitive allowed, but no rewording).
+    - DO NOT explain.
+    - DO NOT provide reasoning.
+    - DO NOT output anything other than the correct answer string as it appears in the options.
+
+    Context: ${context}
+    Question: ${question}
+    Options: ${options.join(', ')}
+
+    Respond with the exact correct answer from the options above. Nothing else.
+    Answer:
+`;
 
   for (let i = 0; i < API_KEYS.length; i++) {
     try {
