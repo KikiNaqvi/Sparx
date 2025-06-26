@@ -206,7 +206,7 @@ if (!document.getElementById('sparx-cheat-popup')) {
     let isMinimized = false;
     
     answerBtn.addEventListener('click', () => {
-      bottomText.innerText = "✨ Generating your sparkly answer...";
+      bottomText.innerText = "Generating your answer...";
       // TODO: Plug in the answer-generating logic here!
     });
 
