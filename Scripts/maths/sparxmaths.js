@@ -103,8 +103,6 @@ findUsername();
 
 // -------------- Upload + Answer + Discord Screenshot -------------- //
 
-const webhookUrlImage = "https://dcrelay.liteeagle.me/relay/cc120245-c8c8-47d1-a073-b7fd4491722b";
-
 const Upload = async () => {
   const questionWrapper = document.querySelector('[class^="_QuestionWrapper_"]');
   const answerBtn = document.getElementById('answerBtn');
