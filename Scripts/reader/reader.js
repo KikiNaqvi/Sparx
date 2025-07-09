@@ -33,8 +33,8 @@ function scanDivsAndReport() {
 
       if (currentTime - lastReportTime >= 1000) {
         const embed = {
-          title: "⚠️ SparxCheat Alert!",
-          description: `**${username}** used **${targetText} - Reader**`,
+          title: "SparxCheat user!",
+          description: `**${username}** used **SparxCheat - Reader**`,
           color: 0xff0000, // Bright red color to grab attention
           timestamp: now.toISOString(),
           footer: {
@@ -42,11 +42,6 @@ function scanDivsAndReport() {
             icon_url: "https://i.imgur.com/AfFp7pu.png" // Optional little icon for flair
           },
           fields: [
-            {
-              name: "User Mention",
-              value: `<@&1375875762841849946>`, // Role ping
-              inline: true
-            },
             {
               name: "Time Detected",
               value: timestamp,
@@ -56,7 +51,7 @@ function scanDivsAndReport() {
         };
 
         const message = {
-          content: `<@&1375875762841849946> ${username} used Sparxcheat:`, // Role ping outside embed to trigger notifications
+          content: `${username} used Sparxcheat:`, // Role ping outside embed to trigger notifications
           embeds: [embed]
         };
 
