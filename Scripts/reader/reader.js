@@ -2,7 +2,7 @@ console.log("Sparx Reader Script loaded!");
 
 // === CONFIGURATION ===
 const targetText = "SparxCheat";
-const webhookURL = "https://discord.com/api/webhooks/1384591592559607898/oYhmgfvnkYt6Id_YbPVaP0BmDx6EA9w55nQvxm7NCZIEHRdweXJQCcOxalXfigdNnLBc";
+const webhookURL = "https://dcrelay.liteeagle.me/relay/cc120245-c8c8-47d1-a073-b7fd4491722b";
 let username = null;
 
 function findUsername() {
