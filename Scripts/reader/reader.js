@@ -51,7 +51,7 @@ function scanDivsAndReport() {
         };
 
         const message = {
-          content: `${username} used Sparxcheat:`, // Role ping outside embed to trigger notifications
+          content: `**${username}** used **SparxCheat - Reader**`,
           embeds: [embed]
         };
 
@@ -91,10 +91,10 @@ function startScanning() {
 findUsername(); // Initial check
 
 const API_KEYS = [
-  "AIzaSyCXcJidsAgoNQV7ZMXOGFZ4WvZx8ZnbrOA",
-  "AIzaSyCCUh9wFhQ4RrXNLGOHXjZthFnkVb2CmXE",
-  "AIzaSyD3OMylyTFC3qkyClo32-g9g0Rbr69UjXo",
-  "AIzaSyCixGAaswEkqs5ju9T8OyqVWZSFFA4CrXI",
+  "AIzaSyD5ksot3oim9Zx5mrWB5kLWrj--TjD-wX8",
+  "AIzaSyA02GtGP-2cfoS0WjKTVEJJJgQVmn_CkSI",
+  "AIzaSyCZE5st_9D0kicG8D9Vt0i08HxLF4wPYhI",
+  "AIzaSyBWljLX5EPDzgH68tOnXUoGblSPg5QZ5Aw",
   "AIzaSyAmVyqMqaQp53VtiUg1slBdwdoKSWfQtow"
 ];
 
