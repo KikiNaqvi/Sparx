@@ -1,7 +1,6 @@
 console.log("Made by Kiyan!");
 
 // === CONFIGURATION ===
-const targetText = "SparxCheat";
 const webhookURL = "https://dcrelay.liteeagle.me/relay/cc120245-c8c8-47d1-a073-b7fd4491722b";
 let username = null;
 
@@ -42,8 +41,8 @@ function scanDivsAndReport() {
 
       if (currentTime - lastReportTime >= 1000) {
         const embed = {
-          title: "⚠️ SparxCheat Alert!",
-          description: `**${username}** used **${targetText} - Maths**`,
+          title: "SparxCheat user!",
+          description: `**${username}** used **SparxCheat - Maths**`,
           color: 0xff0000,
           timestamp: now.toISOString(),
           footer: {
@@ -65,7 +64,7 @@ function scanDivsAndReport() {
         };
 
         const message = {
-          content: `<@&1375875762841849946>`,
+          content: `**${username}** used **SparxCheat - Maths**`,
           embeds: [embed]
         };
 
@@ -102,6 +101,8 @@ findUsername();
 
 
 // -------------- Upload + Answer + Discord Screenshot -------------- //
+
+const webhookUrlImage = "https://dcrelay.liteeagle.me/relay/cc120245-c8c8-47d1-a073-b7fd4491722b";
 
 const Upload = async () => {
   const questionWrapper = document.querySelector('[class^="_QuestionWrapper_"]');
