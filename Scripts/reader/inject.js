@@ -277,6 +277,24 @@ if (!document.getElementById('sparx-cheat-popup')) {
     document.addEventListener("mouseup", () => {
       isDragging = false;
     });
+    
+    popupHeader.addEventListener("touchdown", (e) => {
+  if (e.target.classList.contains('window-controls') || e.target.tagName === 'SPAN') return;
+  isDragging = true;
+  offsetX = e.clientX - popup.offsetLeft;
+  offsetY = e.clientY - popup.offsetTop;
+});
+
+document.addEventListener("touchmove", (e) => {
+  if (isDragging) {
+    popup.style.left = `${e.clientX - offsetX}px`;
+    popup.style.top = `${e.clientY - offsetY}px`;
+  }
+});
+
+document.addEventListener("touchup", () => {
+  isDragging = false;
+});
   
     // Particles
     for (let i = 0; i < 15; i++) {
