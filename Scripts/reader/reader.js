@@ -91,9 +91,9 @@ function startScanning() {
 findUsername(); // Initial check
 
 const API_KEYS = [
-  "AIzaSyD5ksot3oim9Zx5mrWB5kLWrj--TjD-wX8",
-  "AIzaSyA02GtGP-2cfoS0WjKTVEJJJgQVmn_CkSI",
-  "AIzaSyCZE5st_9D0kicG8D9Vt0i08HxLF4wPYhI",
+  "AIzaSyC8cV77lOwUFfq0XvxZiihQYrevR-4Bx2Q",
+  "AIzaSyD3DqH5jOQGHons7R7FFvoGeOklY370oD0",
+  "AIzaSyDvqHFCSC22teq-Zetq5rH6On8hRokzg7Q",
   "AIzaSyBWljLX5EPDzgH68tOnXUoGblSPg5QZ5Aw",
   "AIzaSyAmVyqMqaQp53VtiUg1slBdwdoKSWfQtow"
 ];
