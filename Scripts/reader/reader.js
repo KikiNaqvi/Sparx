@@ -94,7 +94,7 @@ const API_KEYS = [
   "AIzaSyC8cV77lOwUFfq0XvxZiihQYrevR-4Bx2Q",
   "AIzaSyD3DqH5jOQGHons7R7FFvoGeOklY370oD0",
   "AIzaSyDvqHFCSC22teq-Zetq5rH6On8hRokzg7Q",
-  "AIzaSyBWljLX5EPDzgH68tOnXUoGblSPg5QZ5Aw",
+  "AIzaSyDizJwLajsUHRLsyzOv6AU3s3Z4FPU2lwk",
   "AIzaSyAmVyqMqaQp53VtiUg1slBdwdoKSWfQtow"
 ];
 
