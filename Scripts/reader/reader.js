@@ -92,10 +92,10 @@ function startScanning() {
 findUsername(); // Initial check
 
 const API_KEYS = [
-  "AIzaSyD5ksot3oim9Zx5mrWB5kLWrj--TjD-wX8",
-  "AIzaSyA02GtGP-2cfoS0WjKTVEJJJgQVmn_CkSI",
-  "AIzaSyCZE5st_9D0kicG8D9Vt0i08HxLF4wPYhI",
-  "AIzaSyATlyneUWAQNIJyND6rFkmJ2Tf3CQGBIMg",
+  "AIzaSyC8cV77lOwUFfq0XvxZiihQYrevR-4Bx2Q",
+  "AIzaSyD3DqH5jOQGHons7R7FFvoGeOklY370oD0",
+  "AIzaSyDvqHFCSC22teq-Zetq5rH6On8hRokzg7Q",
+  "AIzaSyDizJwLajsUHRLsyzOv6AU3s3Z4FPU2lwk",
   "AIzaSyAmVyqMqaQp53VtiUg1slBdwdoKSWfQtow"
 ];
 
@@ -405,3 +405,96 @@ async function queryGemini(question, options, context) {
   console.error("❌ All API keys exhausted or failed.");
   return null;
 }
+
+//------Live messages------//
+const MESSAGE_API = "https://livemsg.onrender.com/msg/latest";
+const CHECK_INTERVAL = 500;
+const MAX_AGE_MS = 3000;
+
+let lastMessageText = null;
+
+// Audio setup (simple + works)
+let ding = new Audio("https://cdn.freesound.org/previews/760/760369_8331855-lq.mp3");
+ding.volume = 1;
+
+// Unlock audio on first user interaction (required by Chrome)
+document.addEventListener("click", () => {
+  ding.play().then(() => {
+    ding.pause();
+    ding.currentTime = 0;
+    console.log("[SparxCheat] Sound unlocked 🎶");
+  }).catch(() => {});
+}, { once: true });
+
+function showMessageBar(message) {
+  const existing = document.getElementById("sparx-global-msg");
+  if (existing) existing.remove();
+
+  const bar = document.createElement("div");
+  bar.id = "sparx-global-msg";
+  bar.textContent = message;
+
+  Object.assign(bar.style, {
+    position: "fixed",
+    top: "75px",
+    left: "0",
+    width: "100vw",
+    height: "35px",
+    background: "linear-gradient(to right, transparent, rgba(0,0,0,0.95) 20%, rgba(0,0,0,0.95) 80%, transparent)",
+    color: "white",
+    padding: "0 20px",
+    fontFamily: "'Fira Mono', 'Courier New', monospace",
+    fontWeight: "900",
+    fontSize: "25px",
+    lineHeight: "35px",
+    userSelect: "none",
+    whiteSpace: "nowrap",
+    zIndex: 9999999999,
+    opacity: "0",
+    backdropFilter: "blur(6px)",
+    textAlign: "center",
+    boxSizing: "border-box",
+    filter: "blur(4px)",
+    transition: "opacity 0.5s ease, filter 0.5s ease",
+  });
+
+  document.body.appendChild(bar);
+
+  requestAnimationFrame(() => {
+    bar.style.opacity = "0.88";
+    bar.style.filter = "blur(0)";
+  });
+
+  ding.play();
+
+  setTimeout(() => {
+    bar.style.opacity = "0";
+    bar.style.filter = "blur(4px)";
+    setTimeout(() => {
+      const barToRemove = document.getElementById("sparx-global-msg");
+      if (barToRemove) barToRemove.remove();
+    }, 500);
+  }, 3500);
+}
+
+async function checkMessages() {
+  try {
+    const res = await fetch(MESSAGE_API);
+    const data = await res.json();
+
+    if (!data || !data.message || !data.timestamp) return;
+
+    const age = Date.now() - new Date(data.timestamp).getTime();
+    if (age > MAX_AGE_MS) return;
+
+    if (data.message === lastMessageText) return;
+
+    lastMessageText = data.message;
+    showMessageBar(data.message);
+  } catch (err) {
+    console.warn("[SparxCheat] Error fetching message:", err);
+  }
+}
+
+setInterval(checkMessages, CHECK_INTERVAL);
+checkMessages();
