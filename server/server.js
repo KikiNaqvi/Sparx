@@ -44,6 +44,13 @@ app.get("/api/events", (req, res) => {
   res.json(events);
 });
 
+// ----- Clear All Events -----
+app.post("/api/clearevents", (req, res) => {
+  events = {};
+  console.log("🛑 All events cleared");
+  res.json({ status: "ok", cleared: true });
+});
+
 // ----- Boot -----
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
