@@ -6,7 +6,8 @@
 
   let lastMessageText = null;
   let musicUnlocked = false;
-  let countdownActive = false; // track if countdown is already running
+  let countdownActive = false;
+  let musicActive = false;
 
   // ----- Audio -----
   const ding = new Audio("https://cdn.freesound.org/previews/760/760369_8331855-lq.mp3");
@@ -15,8 +16,6 @@
   const bgMusic = new Audio("https://github.com/KikiNaqvi/Sparx/raw/main/Raining%20Tacos%20-%20Parry%20Gripp%20%20BooneBum.mp3");
   bgMusic.loop = true;
   bgMusic.volume = 0.5;
-
-  let musicActive = false;
 
   // ----- Unlock Prompt -----
   function setupMusicUnlock() {
@@ -92,7 +91,7 @@
 
   // ----- Countdown -----
   function startCountdown(targetTime) {
-    if (countdownActive) return; // already running
+    if (countdownActive) return;
     countdownActive = true;
 
     const existing = document.getElementById("countdown-div");
@@ -125,10 +124,9 @@
       if (diff <= 0) {
         countdownDiv.textContent = "⏳ Finished!";
         clearInterval(interval);
-        // remove after 15 seconds
         setTimeout(() => {
           if (countdownDiv.parentNode) countdownDiv.remove();
-          countdownActive = false; // allow next countdown
+          countdownActive = false;
         }, 15000);
         return;
       }
@@ -141,7 +139,7 @@
 
   // ----- Taco Rain -----
   function startTacoRain() {
-    if (document.getElementById("taco-rain-container")) return; // prevent duplicates
+    if (document.getElementById("taco-rain-container")) return;
 
     const taco = '🌮';
     const container = document.createElement('div');
@@ -186,7 +184,6 @@
       setTimeout(() => tacoEl.remove(), 3000);
     }, 30);
 
-    // Stop after 1 min
     setTimeout(() => {
       clearInterval(interval);
       container.remove();
@@ -208,21 +205,95 @@
     }, 60000);
   }
 
+  // ----- Disco Ball Event -----
+  async function startDiscoBallEvent() {
+    if (document.getElementById("disco-container")) return;
+
+    const discoContainer = document.createElement("div");
+    discoContainer.id = "disco-container";
+    Object.assign(discoContainer.style, {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      width: "100vw",
+      height: "100vh",
+      overflow: "hidden",
+      pointerEvents: "none",
+      zIndex: 9999999999,
+    });
+    document.body.appendChild(discoContainer);
+
+    const img = document.createElement("img");
+    img.src = "https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/disco-ball-Photoroom.png";
+    Object.assign(img.style, {
+      position: "absolute",
+      top: "-150px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      width: "150px",
+      height: "150px",
+      transition: "top 5s ease-out"
+    });
+    discoContainer.appendChild(img);
+    requestAnimationFrame(() => img.style.top = "0px");
+
+    const overlay = document.createElement("div");
+    Object.assign(overlay.style, {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100vw",
+      height: "100vh",
+      zIndex: 9999999998,
+      pointerEvents: "none",
+      backgroundColor: "rgba(255,0,0,0.2)",
+      mixBlendMode: "overlay",
+    });
+    discoContainer.appendChild(overlay);
+
+    const audio = new Audio("https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/Clubbed%20To%20Tech%20(Radio%20Edit).mp3");
+    audio.loop = true;
+    audio.volume = 0.5;
+    await audio.play().catch(() => { console.warn("Audio autoplay blocked"); });
+
+    let lastTime = 0;
+    const bpm = 128;
+    const beatInterval = 60000 / bpm;
+
+    const animation = (time) => {
+      if (time - lastTime >= beatInterval) {
+        lastTime = time;
+        const scale = 1 + Math.random() * 0.05;
+        document.body.style.transform = `scale(${scale})`;
+        setTimeout(() => document.body.style.transform = "scale(1)", beatInterval/2);
+
+        const r = Math.floor(Math.random()*256);
+        const g = Math.floor(Math.random()*256);
+        const b = Math.floor(Math.random()*256);
+        overlay.style.backgroundColor = `rgba(${r},${g},${b},0.2)`;
+      }
+      requestAnimationFrame(animation);
+    };
+    requestAnimationFrame(animation);
+
+    setTimeout(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      discoContainer.remove();
+      document.body.style.transform = "scale(1)";
+    }, 60000);
+  }
+
   // ----- Event Checker -----
   async function checkEvents() {
     try {
       const res = await fetch(EVENTS_API);
       const data = await res.json();
 
-      if (data.countdown?.enabled && data.countdown.time) {
-        startCountdown(data.countdown.time);
-      }
-      if (data["taco-rain"]?.enabled) {
-        startTacoRain();
-      }
-      if (data["music"]?.enabled) {
-        startMusicEvent();
-      }
+      if (data.countdown?.enabled && data.countdown.time) startCountdown(data.countdown.time);
+      if (data["taco-rain"]?.enabled) startTacoRain();
+      if (data["music"]?.enabled) startMusicEvent();
+      if (data["disco-ball"]?.enabled) startDiscoBallEvent();
     } catch (err) {
       console.warn("Error fetching events:", err);
     }
