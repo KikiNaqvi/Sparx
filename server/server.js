@@ -26,20 +26,37 @@ app.get("/msg/latest", (req, res) => {
 // ----- Event System -----
 let events = {}; // store enabled events
 
+// Utility: auto-disable events except countdown
+function setEventAutoDisable(eventName, time = null) {
+  events[eventName] = {
+    enabled: true,
+    time: time,
+    updated: Date.now(),
+  };
+
+  console.log(`🎉 Event set: ${eventName} ${time ? `(time: ${time})` : ""}`);
+
+  // Auto-disable all except countdown
+  if (eventName !== "countdown") {
+    setTimeout(() => {
+      if (events[eventName]) {
+        events[eventName].enabled = false;
+        console.log(`⏱️ Event automatically disabled: ${eventName}`);
+      }
+    }, 60000); // 1 minute
+  }
+}
+
+// ----- Set Event Endpoint -----
 app.post("/api/setevent", (req, res) => {
   const { event, time } = req.body;
   if (!event) return res.status(400).json({ error: "No event name provided" });
 
-  events[event] = {
-    enabled: true,
-    time: time || null,
-    updated: Date.now(),
-  };
-
-  console.log(`🎉 Event set: ${event} ${time ? `(time: ${time})` : ""}`);
+  setEventAutoDisable(event, time);
   res.json({ status: "ok", event: events[event] });
 });
 
+// ----- Get Events Endpoint -----
 app.get("/api/events", (req, res) => {
   res.json(events);
 });
