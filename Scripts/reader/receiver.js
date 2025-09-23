@@ -259,6 +259,7 @@
     let lastTime = 0;
     const bpm = 128;
     const beatInterval = 60000 / bpm;
+    let frameId;
 
     const animation = (time) => {
       if (time - lastTime >= beatInterval) {
@@ -272,11 +273,12 @@
         const b = Math.floor(Math.random()*256);
         overlay.style.backgroundColor = `rgba(${r},${g},${b},0.2)`;
       }
-      requestAnimationFrame(animation);
+      frameId = requestAnimationFrame(animation);
     };
-    requestAnimationFrame(animation);
+    frameId = requestAnimationFrame(animation);
 
     setTimeout(() => {
+      cancelAnimationFrame(frameId); // stop bouncing/color loop
       audio.pause();
       audio.currentTime = 0;
       discoContainer.remove();
