@@ -1,388 +1,388 @@
 (function () {
- const MESSAGE_API = "https://livemsg.onrender.com/msg/latest";
- const EVENTS_API = "https://livemsg.onrender.com/api/events";
- const CHECK_INTERVAL = 500;
- const EVENT_CHECK_INTERVAL = 3000;
+  const MESSAGE_API = "https://livemsg.onrender.com/msg/latest";
+  const EVENTS_API = "https://livemsg.onrender.com/api/events";
+  const CHECK_INTERVAL = 500;
+  const EVENT_CHECK_INTERVAL = 3000;
 
- let lastMessageText = null;
- let musicUnlocked = false;
- let countdownActive = false;
- let musicActive = false;
+  // state
+  window.activeEvents = window.activeEvents || {};
+  let lastMessageText = null;
+  let musicUnlocked = false;
+  let musicActive = false;
+  let countdownActive = false;
 
- // ----- Audio -----
- const ding = new Audio("https://cdn.freesound.org/previews/760/760369_8331855-lq.mp3");
- ding.volume = 1;
+  // audio assets
+  const ding = new Audio("https://cdn.freesound.org/previews/760/760369_8331855-lq.mp3");
+  ding.volume = 1;
+  const bgMusic = new Audio("https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/Raining%20Tacos%20-%20Parry%20Gripp%20%20BooneBum.mp3");
+  bgMusic.loop = true;
+  bgMusic.volume = 0.5;
 
- const bgMusic = new Audio("https://github.com/KikiNaqvi/Sparx/raw/main/Raining%20Tacos%20-%20Parry%20Gripp%20%20BooneBum.mp3");
- bgMusic.loop = true;
- bgMusic.volume = 0.5;
+  // helper: create element safely
+  function mk(tag, props = {}) {
+    const el = document.createElement(tag);
+    Object.assign(el, props);
+    return el;
+  }
 
- // ----- Unlock Prompt -----
- function setupMusicUnlock() {
- const prompt = document.createElement("div");
- prompt.textContent = "🔊 Click anywhere to enable music!";
- Object.assign(prompt.style, {
- position: "fixed",
- top: "120px",
- left: "50%",
- transform: "translateX(-50%)",
- background: "#222",
- color: "lime",
- fontFamily: "monospace",
- fontSize: "22px",
- padding: "10px 20px",
- borderRadius: "8px",
- zIndex: 9999999999,
- userSelect: "none",
- });
- document.body.appendChild(prompt);
+  // ----- unlock prompt -----
+  function setupMusicUnlock() {
+    if (document.getElementById("kiyan-music-unlock")) return;
+    const prompt = mk("div", { id: "kiyan-music-unlock" });
+    prompt.textContent = "🔊 Click anywhere to enable music!";
+    Object.assign(prompt.style, {
+      position: "fixed",
+      top: "120px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: "#222",
+      color: "lime",
+      fontFamily: "monospace",
+      fontSize: "18px",
+      padding: "8px 14px",
+      borderRadius: "8px",
+      zIndex: 9999999999,
+      userSelect: "none",
+    });
+    document.body.appendChild(prompt);
+    const unlock = () => {
+      musicUnlocked = true;
+      prompt.remove();
+      document.removeEventListener("click", unlock);
+    };
+    document.addEventListener("click", unlock);
+  }
 
- const unlock = () => {
- musicUnlocked = true;
- prompt.remove();
- document.removeEventListener("click", unlock);
- };
+  // ----- message bar -----
+  function showMessageBar(message) {
+    const bar = mk("div");
+    Object.assign(bar.style, {
+      position: "fixed",
+      top: "75px",
+      left: "0",
+      width: "100vw",
+      height: "35px",
+      background: "rgba(0,0,0,0.85)",
+      color: "white",
+      fontFamily: "monospace",
+      fontSize: "20px",
+      lineHeight: "35px",
+      textAlign: "center",
+      zIndex: 9999999999,
+      opacity: "0",
+      transition: "opacity 0.25s ease",
+    });
+    bar.textContent = message;
+    document.body.appendChild(bar);
+    requestAnimationFrame(() => bar.style.opacity = "0.9");
+    ding.play().catch(() => {});
+    setTimeout(() => { bar.style.opacity = "0"; setTimeout(() => bar.remove(), 300); }, 3500);
+  }
 
- document.addEventListener("click", unlock);
- }
+  async function checkMessages() {
+    try {
+      const res = await fetch(MESSAGE_API);
+      const data = await res.json();
+      if (!data?.message || !data?.timestamp) return;
+      const age = Date.now() - new Date(data.timestamp).getTime();
+      if (age > 3000 || data.message === lastMessageText) return;
+      lastMessageText = data.message;
+      showMessageBar(data.message);
+    } catch (e) {
+      console.warn("checkMessages error", e);
+    }
+  }
 
- // ----- Message Bar -----
- function showMessageBar(message) {
- const bar = document.createElement("div");
- bar.textContent = message;
- Object.assign(bar.style, {
- position: "fixed",
- top: "75px",
- left: "0",
- width: "100vw",
- height: "35px",
- background: "rgba(0,0,0,0.85)",
- color: "white",
- fontFamily: "monospace",
- fontSize: "24px",
- lineHeight: "35px",
- textAlign: "center",
- zIndex: 9999999999,
- opacity: "0",
- transition: "opacity 0.5s ease",
- });
- document.body.appendChild(bar);
- requestAnimationFrame(() => bar.style.opacity = "0.9");
- ding.play();
- setTimeout(() => {
- bar.style.opacity = "0";
- setTimeout(() => bar.remove(), 500);
- }, 3500);
- }
+  // ========== TACO RAIN ==========
+  let tacoRainInterval = null;
+  let tacoRainStopTimeout = null;
+  function startTacoRain() {
+    if (document.getElementById("taco-rain-container")) return;
+    const container = mk("div", { id: "taco-rain-container" });
+    Object.assign(container.style, {
+      position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+      pointerEvents: "none", zIndex: 999999998
+    });
+    document.body.appendChild(container);
 
- async function checkMessages() {
- try {
- const res = await fetch(MESSAGE_API);
- const data = await res.json();
- if (!data?.message || !data?.timestamp) return;
- const age = Date.now() - new Date(data.timestamp).getTime();
- if (age > 3000 || data.message === lastMessageText) return;
- lastMessageText = data.message;
- showMessageBar(data.message);
- } catch (err) {
- console.warn("Error fetching message:", err);
- }
- }
+    if (!document.getElementById("taco-rain-style")) {
+      const style = mk("style", { id: "taco-rain-style" });
+      style.textContent = `@keyframes kiyan-fall{to{transform:translateY(100vh) rotate(360deg);opacity:0}}`;
+      document.head.appendChild(style);
+    }
 
- // ----- Countdown -----
- function startCountdown(targetTime) {
- if (countdownActive) return;
- countdownActive = true;
+    tacoRainInterval = setInterval(() => {
+      const taco = mk("div");
+      taco.textContent = "🌮";
+      Object.assign(taco.style, {
+        position: "absolute",
+        left: Math.random() * window.innerWidth + "px",
+        top: "-120px",
+        fontSize: (60 + Math.random() * 40) + "px",
+        transform: `rotate(${Math.random() * 360}deg)`,
+        animation: "kiyan-fall 3s linear forwards",
+        zIndex: 999999999
+      });
+      container.appendChild(taco);
+      setTimeout(() => taco.remove(), 3200);
+    }, 120);
 
- const existing = document.getElementById("countdown-div");
- if (existing) existing.remove();
+    // if unlocked, play bg music (only if not already active)
+    if (musicUnlocked && !musicActive) startMusic();
 
- const countdownDiv = document.createElement("div");
- countdownDiv.id = "countdown-div";
- Object.assign(countdownDiv.style, {
- position: "fixed",
- top: "50%",
- left: "10px",
- transform: "translateY(-50%)",
- fontFamily: "monospace",
- fontSize: "80px",
- fontWeight: "900",
- color: "white",
- textShadow: "2px 2px 4px black",
- zIndex: 9999999999,
- pointerEvents: "none"
- });
- document.body.appendChild(countdownDiv);
+    // safety stop
+    tacoRainStopTimeout = setTimeout(() => {
+      stopTacoRain();
+    }, 60000);
+  }
+  function stopTacoRain() {
+    if (tacoRainInterval) clearInterval(tacoRainInterval);
+    tacoRainInterval = null;
+    if (tacoRainStopTimeout) { clearTimeout(tacoRainStopTimeout); tacoRainStopTimeout = null; }
+    document.getElementById("taco-rain-container")?.remove();
+    // don't forcibly stop bgMusic here — music is controlled via music event unless you want otherwise
+    window.activeEvents["taco-rain"] = false;
+  }
 
- const interval = setInterval(() => {
- const now = new Date();
- const target = new Date();
- const [h, m] = targetTime.split(":").map(Number);
- target.setHours(h, m, 0, 0);
- const diff = target - now;
+  // ========== MUSIC (bgMusic) ==========
+  let musicStopTimeout = null;
+  function startMusic() {
+    if (!musicUnlocked) return;
+    if (musicActive) return;
+    musicActive = true;
+    bgMusic.currentTime = 0;
+    bgMusic.play().catch(() => {});
+    musicStopTimeout = setTimeout(() => stopMusic(), 60000);
+  }
+  function stopMusic() {
+    if (musicStopTimeout) { clearTimeout(musicStopTimeout); musicStopTimeout = null; }
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+    musicActive = false;
+    window.activeEvents["music"] = false;
+  }
 
- if (diff <= 0) {
- countdownDiv.textContent = "⏳ Finished!";
- clearInterval(interval);
- setTimeout(() => {
- if (countdownDiv.parentNode) countdownDiv.remove();
- countdownActive = false;
- }, 15000);
- return;
- }
+  // ========== DISCO BALL ==========
+  let discoIntervalId = null;
+  let discoAudio = null;
+  function startDiscoBall() {
+    if (document.getElementById("disco-container")) return;
+    const container = mk("div", { id: "disco-container" });
+    Object.assign(container.style, { position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", pointerEvents: "none", zIndex: 999999997, overflow: "hidden" });
+    document.body.appendChild(container);
 
- const mins = Math.floor(diff / 60000);
- const secs = Math.floor((diff % 60000) / 1000);
- countdownDiv.textContent = `${mins}:${secs.toString().padStart(2,"0")}`;
- }, 1000);
- }
+    const img = mk("img");
+    img.src = "https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/disco-ball-Photoroom.png";
+    Object.assign(img.style, { position: "absolute", top: "-150px", left: "50%", transform: "translateX(-50%)", width: "120px", height: "120px", transition: "top 5s ease-out" });
+    container.appendChild(img);
+    requestAnimationFrame(() => img.style.top = "0px");
 
- // ----- Taco Rain -----
- function startTacoRain() {
- if (document.getElementById("taco-rain-container")) return;
+    const overlay = mk("div");
+    overlay.id = "disco-overlay";
+    Object.assign(overlay.style, { position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", pointerEvents: "none", zIndex: 999999996, mixBlendMode: "overlay", background: "rgba(255,0,0,0.25)", transition: "background 0.12s linear" });
+    document.body.appendChild(overlay);
 
- const taco = '🌮';
- const container = document.createElement('div');
- container.id = 'taco-rain-container';
- Object.assign(container.style, {
- position: 'fixed',
- top: 0,
- left: 0,
- width: '100%',
- height: '100%',
- pointerEvents: 'none',
- zIndex: 9999
- });
- document.body.appendChild(container);
+    discoAudio = new Audio("https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/Clubbed%20To%20Tech%20(Radio%20Edit).mp3");
+    discoAudio.loop = true;
+    discoAudio.volume = 0.45;
+    discoAudio.play().catch(() => console.warn("disco audio blocked"));
 
- if (!document.getElementById('taco-rain-style')) {
- const style = document.createElement('style');
- style.id = 'taco-rain-style';
- style.textContent = `
- @keyframes fall {
- to {
- transform: translateY(100vh) rotate(360deg);
- opacity: 0;
- }
- }
- `;
- document.head.appendChild(style);
- }
+    discoIntervalId = setInterval(() => {
+      const r = Math.floor(Math.random() * 256), g = Math.floor(Math.random() * 256), b = Math.floor(Math.random() * 256);
+      overlay.style.background = `rgba(${r},${g},${b},0.28)`;
+      // quick body beat pulse
+      document.body.style.transition = "transform 120ms linear";
+      document.body.style.transform = "scale(1.04)";
+      setTimeout(() => { if (document.body) document.body.style.transform = "scale(1)"; }, 120);
+    }, 480);
 
- const interval = setInterval(() => {
- const tacoEl = document.createElement('div');
- tacoEl.textContent = taco;
- Object.assign(tacoEl.style, {
- position: 'absolute',
- left: Math.random() * window.innerWidth + 'px',
- top: '-100px',
- fontSize: '80px',
- transform: `rotate(${Math.random() * 360}deg)`,
- animation: 'fall 3s linear forwards'
- });
- container.appendChild(tacoEl);
- setTimeout(() => tacoEl.remove(), 3000);
- }, 30);
+    // safety stop
+    setTimeout(stopDiscoBall, 60000);
+  }
+  function stopDiscoBall() {
+    if (discoIntervalId) { clearInterval(discoIntervalId); discoIntervalId = null; }
+    discoAudio?.pause();
+    discoAudio = null;
+    document.getElementById("disco-overlay")?.remove();
+    document.getElementById("disco-container")?.remove();
+    document.body.style.transform = "scale(1)";
+    window.activeEvents["disco-ball"] = false;
+  }
 
- setTimeout(() => {
- clearInterval(interval);
- container.remove();
- }, 60000);
+  // ========== SCREEN DANCE ==========
+  let screenDanceMoveTimer = null;
+  let screenDanceStopTimer = null;
+  let screenDanceAudio = null;
+  let screenDanceOverlayRemovalTimer = null;
+  function startScreenDance() {
+    if (window.screenDanceActive) return;
+    window.screenDanceActive = true;
 
- if (musicUnlocked) startMusicEvent();
- }
+    // Black overlay instantly visible
+    const overlay = mk("div", { id: "screen-dance-overlay" });
+    Object.assign(overlay.style, { position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "black", zIndex: 9999999999, pointerEvents: "none", opacity: "1" });
+    document.body.appendChild(overlay);
 
- // ----- Music -----
- function startMusicEvent() {
- if (musicActive) return;
- musicActive = true;
- bgMusic.currentTime = 0;
- bgMusic.play().catch(() => {});
- setTimeout(() => {
- bgMusic.pause();
- bgMusic.currentTime = 0;
- musicActive = false;
- }, 60000);
- }
+    // Fade out: start after 1s, duration 4s
+    setTimeout(() => {
+      overlay.style.transition = "opacity 4s ease";
+      overlay.style.opacity = "0";
+      // remove after fade completes
+      screenDanceOverlayRemovalTimer = setTimeout(() => { overlay.remove(); screenDanceOverlayRemovalTimer = null; }, 4000);
+    }, 1000);
 
- // ----- Disco Ball Event -----
- async function startDiscoBallEvent() {
- if (document.getElementById("disco-container")) return;
+    // Play audio
+    screenDanceAudio = new Audio("https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/PASSO%20BEM%20SOLTO%20(Super%20Sped%20Up).mp3");
+    screenDanceAudio.loop = true;
+    screenDanceAudio.volume = 0.6;
+    screenDanceAudio.play().catch(() => console.warn("screen-dance audio blocked"));
 
- const discoContainer = document.createElement("div");
- discoContainer.id = "disco-container";
- Object.assign(discoContainer.style, {
- position: "fixed",
- top: "0",
- left: "0",
- width: "100vw",
- height: "100vh",
- overflow: "hidden",
- pointerEvents: "none",
- zIndex: 9999999999,
- });
- document.body.appendChild(discoContainer);
+    // Start movement after overlay fully gone (1s delay + 4s fade = 5s)
+    const SCREEN_DANCE_BPM = 70; // slower; increase to speed up
+    const beatInterval = Math.max(120, Math.round(60000 / SCREEN_DANCE_BPM)); // ms
+    const sequence = [
+      { x: "-30px", y: "0px" }, { x: "0px", y: "0px" },
+      { x: "0px", y: "-30px" }, { x: "0px", y: "0px" },
+      { x: "30px", y: "0px" },  { x: "0px", y: "0px" },
+      { x: "0px", y: "30px" },  { x: "0px", y: "0px" }
+    ];
 
- const img = document.createElement("img");
- img.src = "https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/disco-ball-Photoroom.png";
- Object.assign(img.style, {
- position: "absolute",
- top: "-150px",
- left: "50%",
- transform: "translateX(-50%)",
- width: "120px",
- height: "120px",
- transition: "top 5s ease-out"
- });
- discoContainer.appendChild(img);
- requestAnimationFrame(() => img.style.top = "0px");
+    let idx = 0;
+    function doMove() {
+      if (!window.screenDanceActive) return;
+      const mv = sequence[idx];
+      document.body.style.transition = `transform ${Math.round(beatInterval)}ms ease`;
+      document.body.style.transform = `translate(${mv.x}, ${mv.y})`;
+      idx = (idx + 1) % sequence.length;
+      screenDanceMoveTimer = setTimeout(doMove, beatInterval);
+    }
 
- const overlay = document.createElement("div");
- Object.assign(overlay.style, {
- position: "fixed",
- top: 0,
- left: 0,
- width: "100vw",
- height: "100vh",
- zIndex: 9999999998,
- pointerEvents: "none",
- backgroundColor: "rgba(255,0,0,0.2)",
- mixBlendMode: "overlay",
- });
- discoContainer.appendChild(overlay);
+    // start after 5s
+    setTimeout(() => {
+      doMove();
+    }, 5000);
 
- const audio = new Audio("https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/Clubbed%20To%20Tech%20(Radio%20Edit).mp3");
- audio.loop = true;
- audio.volume = 0.5;
- await audio.play().catch(() => { console.warn("Audio autoplay blocked"); });
+    // safety stop in 1 minute
+    screenDanceStopTimer = setTimeout(() => {
+      stopScreenDance();
+    }, 60000);
+  }
 
- let lastTime = 0;
- const bpm = 128;
- const beatInterval = 60000 / bpm;
- let frameId;
+  function stopScreenDance() {
+    if (screenDanceMoveTimer) { clearTimeout(screenDanceMoveTimer); screenDanceMoveTimer = null; }
+    if (screenDanceStopTimer) { clearTimeout(screenDanceStopTimer); screenDanceStopTimer = null; }
+    if (screenDanceOverlayRemovalTimer) { clearTimeout(screenDanceOverlayRemovalTimer); screenDanceOverlayRemovalTimer = null; }
+    screenDanceAudio?.pause();
+    screenDanceAudio = null;
+    document.getElementById("screen-dance-overlay")?.remove();
+    document.body.style.transform = "translate(0,0)";
+    window.screenDanceActive = false;
+    window.activeEvents["screen-dance"] = false;
+  }
 
- const animation = (time) => {
- if (time - lastTime >= beatInterval) {
- lastTime = time;
- const scale = 1 + Math.random() * 0.05;
- document.body.style.transform = `scale(${scale})`;
- setTimeout(() => document.body.style.transform = "scale(1)", beatInterval/2);
+  // ========== COUNTDOWN ==========
+  let countdownInterval = null;
+  let countdownRemovalTimer = null;
+  function startCountdown(timeStr) {
+    if (countdownActive) return;
+    countdownActive = true;
+    // clean previous
+    document.getElementById("countdown-div")?.remove();
 
- const r = Math.floor(Math.random()*256);
- const g = Math.floor(Math.random()*256);
- const b = Math.floor(Math.random()*256);
- overlay.style.backgroundColor = `rgba(${r},${g},${b},0.2)`;
- }
- frameId = requestAnimationFrame(animation);
- };
- frameId = requestAnimationFrame(animation);
+    const div = mk("div", { id: "countdown-div" });
+    Object.assign(div.style, {
+      position: "fixed", top: "50%", left: "10px", transform: "translateY(-50%)",
+      fontFamily: "monospace", fontSize: "80px", fontWeight: "900", color: "white",
+      textShadow: "2px 2px 4px black", zIndex: 9999999999, pointerEvents: "none"
+    });
+    document.body.appendChild(div);
 
- setTimeout(() => {
- cancelAnimationFrame(frameId);
- audio.pause();
- audio.currentTime = 0;
- discoContainer.remove();
- document.body.style.transform = "scale(1)";
- }, 60000);
- }
+    function update() {
+      const now = new Date();
+      const target = new Date();
+      const [h, m] = timeStr.split(":").map(Number);
+      target.setHours(h, m, 0, 0);
+      const diff = target - now;
+      if (diff <= 0) {
+        div.textContent = "⏳ Finished!";
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+        // remove after 15s
+        countdownRemovalTimer = setTimeout(() => { div.remove(); countdownRemovalTimer = null; countdownActive = false; window.activeEvents["countdown"] = false; }, 15000);
+        return;
+      }
+      const mins = Math.floor(diff / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      div.textContent = `${mins}:${secs.toString().padStart(2, "0")}`;
+    }
 
- // ----- Screen Dance Event -----
- async function startScreenDanceEvent() {
- // Prevent duplicates
- if (window.screenDanceActive) return;
- window.screenDanceActive = true;
+    update();
+    countdownInterval = setInterval(update, 1000);
+  }
 
- // Black overlay instantly
- const overlay = document.createElement("div");
- overlay.id = "screen-dance-container";
- Object.assign(overlay.style, {
- position: "fixed",
- top: "0",
- left: "0",
- width: "100vw",
- height: "100vh",
- backgroundColor: "black",
- zIndex: 9999999999,
- pointerEvents: "none",
- opacity: "1"
- });
- document.body.appendChild(overlay);
+  function stopCountdown() {
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    if (countdownRemovalTimer) { clearTimeout(countdownRemovalTimer); countdownRemovalTimer = null; }
+    document.getElementById("countdown-div")?.remove();
+    countdownActive = false;
+    window.activeEvents["countdown"] = false;
+  }
 
- // Fade out over 4s after 1s
- setTimeout(() => overlay.style.transition = "opacity 4s ease", 100);
- setTimeout(() => overlay.style.opacity = "0", 1000);
- setTimeout(() => overlay.remove(), 5000);
+  // ========== EVENT CHECKER (start/stop based on backend) ==========
+  async function checkEvents() {
+    try {
+      const res = await fetch(EVENTS_API);
+      const data = await res.json();
 
- // Play audio
- const audio = new Audio("https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/PASSO%20BEM%20SOLTO%20(Super%20Sped%20Up).mp3");
- audio.loop = true;
- audio.volume = 0.5;
- await audio.play().catch(() => console.warn("Audio autoplay blocked"));
+      // Taco rain
+      if (data["taco-rain"]?.enabled) {
+        if (!window.activeEvents["taco-rain"]) { window.activeEvents["taco-rain"] = true; startTacoRain(); }
+      } else {
+        if (window.activeEvents["taco-rain"]) { stopTacoRain(); window.activeEvents["taco-rain"] = false; }
+      }
 
- // Wait until black screen fades
- setTimeout(() => {
- const moves = [
- { x: "-30px", y: "0px" }, // left
-{ x: "0px", y: "0px" }, // center
- { x: "0px", y: "-30px" }, // up
-{ x: "0px", y: "0px" }, // center
- { x: "30px", y: "0px" }, // right
-{ x: "0px", y: "0px" }, // center
- { x: "0px", y: "30px" }, // down
- { x: "0px", y: "0px" } // center
- ];
+      // Music (explicit music event)
+      if (data["music"]?.enabled) {
+        if (!window.activeEvents["music"]) { window.activeEvents["music"] = true; startMusic(); }
+      } else {
+        if (window.activeEvents["music"]) { stopMusic(); window.activeEvents["music"] = false; }
+      }
 
- const bpm = 300; // faster
- const beatInterval = 60000 / bpm;
+      // Disco ball
+      if (data["disco-ball"]?.enabled) {
+        if (!window.activeEvents["disco-ball"]) { window.activeEvents["disco-ball"] = true; startDiscoBall(); }
+      } else {
+        if (window.activeEvents["disco-ball"]) { stopDiscoBall(); window.activeEvents["disco-ball"] = false; }
+      }
 
- let moveIndex = 0;
+      // Screen dance
+      if (data["screen-dance"]?.enabled) {
+        if (!window.activeEvents["screen-dance"]) { window.activeEvents["screen-dance"] = true; startScreenDance(); }
+      } else {
+        if (window.activeEvents["screen-dance"]) { stopScreenDance(); window.activeEvents["screen-dance"] = false; }
+      }
 
- function nextMove() {
- if (moveIndex >= moves.length) moveIndex = 0;
- const move = moves[moveIndex];
- document.body.style.transition = `transform ${beatInterval}ms ease`;
- document.body.style.transform = `translate(${move.x}, ${move.y})`;
- moveIndex++;
- loopTimeout = setTimeout(nextMove, beatInterval);
- }
+      // Countdown (special: backend provides a time)
+      if (data["countdown"]?.enabled && data["countdown"].time) {
+        if (!window.activeEvents["countdown"]) { window.activeEvents["countdown"] = true; startCountdown(data["countdown"].time); }
+      } else {
+        if (window.activeEvents["countdown"]) { stopCountdown(); window.activeEvents["countdown"] = false; }
+      }
 
- let loopTimeout = setTimeout(nextMove, 0);
+    } catch (err) {
+      console.warn("checkEvents error", err);
+    }
+  }
 
- // Stop after 1 minute
- setTimeout(() => {
- clearTimeout(loopTimeout);
- audio.pause();
- audio.currentTime = 0;
- document.body.style.transform = "translate(0,0)";
- window.screenDanceActive = false;
- }, 60000);
+  // ----- loops -----
+  setupMusicUnlock();
+  setInterval(checkMessages, CHECK_INTERVAL);
+  setInterval(checkEvents, EVENT_CHECK_INTERVAL);
+  checkMessages();
+  checkEvents();
 
- }, 5000); // wait 5s for black fade
-}
-
-
-
- // ----- Event Checker -----
- async function checkEvents() {
- try {
- const res = await fetch(EVENTS_API);
- const data = await res.json();
-
- if (data.countdown?.enabled && data.countdown.time) startCountdown(data.countdown.time);
- if (data["taco-rain"]?.enabled) startTacoRain();
- if (data["music"]?.enabled) startMusicEvent();
- if (data["disco-ball"]?.enabled) startDiscoBallEvent();
- if (data["screen-dance"]?.enabled) startScreenDanceEvent();
- } catch (err) {
- console.warn("Error fetching events:", err);
- }
- }
-
- // ----- Loops -----
- setupMusicUnlock();
- setInterval(checkMessages, CHECK_INTERVAL);
- setInterval(checkEvents, EVENT_CHECK_INTERVAL);
- checkMessages();
- checkEvents();
+  // expose stops for debugging
+  window.__kiyan_receiver_debug = {
+    stopTacoRain, stopDiscoBall, stopScreenDance, stopMusic, stopCountdown
+  };
 })();
-
