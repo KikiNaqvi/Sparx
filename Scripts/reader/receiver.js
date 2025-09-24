@@ -27,24 +27,6 @@
 
   // ----- unlock prompt -----
   function setupMusicUnlock() {
-    if (document.getElementById("kiyan-music-unlock")) return;
-    const prompt = mk("div", { id: "kiyan-music-unlock" });
-    prompt.textContent = "🔊 Click anywhere to enable music!";
-    Object.assign(prompt.style, {
-      position: "fixed",
-      top: "120px",
-      left: "50%",
-      transform: "translateX(-50%)",
-      background: "#222",
-      color: "lime",
-      fontFamily: "monospace",
-      fontSize: "18px",
-      padding: "8px 14px",
-      borderRadius: "8px",
-      zIndex: 9999999999,
-      userSelect: "none",
-    });
-    document.body.appendChild(prompt);
     const unlock = () => {
       musicUnlocked = true;
       prompt.remove();
@@ -238,7 +220,7 @@
     screenDanceAudio.play().catch(() => console.warn("screen-dance audio blocked"));
 
     // Start movement after overlay fully gone (1s delay + 4s fade = 5s)
-    const SCREEN_DANCE_BPM = 300; // slower; increase to speed up
+    const SCREEN_DANCE_BPM = 70; // slower; increase to speed up
     const beatInterval = Math.max(120, Math.round(60000 / SCREEN_DANCE_BPM)); // ms
     const sequence = [
       { x: "-30px", y: "0px" }, { x: "0px", y: "0px" },
@@ -328,6 +310,134 @@
     window.activeEvents["countdown"] = false;
   }
 
+  // ========== PHONK2 PARTY MODE ==========
+  let phonk2Interval = null;
+  let phonk2StopTimer = null;
+  let phonk2Audio = null;
+  function startPhonk2() {
+    if (window.activeEvents["phonk2"]) return; // no dupes
+    window.activeEvents["phonk2"] = true;
+
+    // overlay for flashes
+    const overlay = mk("div", { id: "phonk2-overlay" });
+    Object.assign(overlay.style, {
+      position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+      background: "black", opacity: "0.8", pointerEvents: "none",
+      zIndex: 9999999999, transition: "background 100ms, opacity 100ms"
+    });
+    document.body.appendChild(overlay);
+
+    // audio
+    phonk2Audio = new Audio("https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/MENTE%20M%20Sped%20up.mp3");
+    phonk2Audio.loop = true;
+    phonk2Audio.volume = 0.7;
+    phonk2Audio.play().catch(() => console.warn("phonk2 audio blocked"));
+
+    // flashing + movement
+    phonk2Interval = setInterval(() => {
+      if (!window.activeEvents["phonk2"]) return;
+      // flash effect
+      const flash = Math.random() > 0.5;
+      if (flash) {
+        const r = Math.floor(Math.random() * 256);
+        const g = Math.floor(Math.random() * 256);
+        const b = Math.floor(Math.random() * 256);
+        overlay.style.background = `rgb(${r},${g},${b})`;
+        overlay.style.opacity = "0.6";
+      } else {
+        overlay.style.background = "black";
+        overlay.style.opacity = "0.9";
+      }
+      // screen shake
+      const x = (Math.random() * 80 - 40) + "px";
+      const y = (Math.random() * 80 - 40) + "px";
+      document.body.style.transition = "transform 100ms ease";
+      document.body.style.transform = `translate(${x}, ${y}) scale(${1 + Math.random()*0.1})`;
+      // snap back after 100ms
+      setTimeout(() => { document.body.style.transform = "translate(0,0) scale(1)"; }, 120);
+    }, 200); // adjust speed here (lower = faster)
+
+    // auto stop after 1 min
+    phonk2StopTimer = setTimeout(stopPhonk2, 60000);
+  }
+
+  function stopPhonk2() {
+    if (phonk2Interval) { clearInterval(phonk2Interval); phonk2Interval = null; }
+    if (phonk2StopTimer) { clearTimeout(phonk2StopTimer); phonk2StopTimer = null; }
+    phonk2Audio?.pause();
+    phonk2Audio = null;
+    document.getElementById("phonk2-overlay")?.remove();
+    document.body.style.transform = "translate(0,0) scale(1)";
+    window.activeEvents["phonk2"] = false;
+  }
+
+  let ladraoInterval = null;
+let ladraoStopTimer = null;
+let ladraoAudio = null;
+
+  function startLadrao() {
+    if (window.activeEvents["ladrao"]) return;
+    window.activeEvents["ladrao"] = true;
+
+    const overlay = document.createElement("div");
+    overlay.id = "ladrao-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100vw",
+      height: "100vh",
+      background: "rgba(50,50,50,0.8)",
+      pointerEvents: "none",
+      zIndex: 9999999999,
+      transition: "background 200ms linear"
+    });
+    document.body.appendChild(overlay);
+
+    ladraoAudio = new Audio("https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/MONTAGEM%20LADRAO%20(%20Sped%20Up%20Best%20version%20).mp3");
+    ladraoAudio.loop = true;
+    ladraoAudio.volume = 0.65;
+    ladraoAudio.play().catch(() => console.warn("ladrao audio blocked"));
+
+    ladraoInterval = setInterval(() => {
+      if (!window.activeEvents["ladrao"]) return;
+
+      // Pulsating screen bounce
+      const scale = 1 + Math.random() * 0.1;
+      document.body.style.transition = "transform 120ms linear";
+      document.body.style.transform = `scale(${scale})`;
+      setTimeout(() => { document.body.style.transform = "scale(1)"; }, 120);
+
+      // Random neon laser flashes
+      const laser = document.createElement("div");
+      laser.style.position = "fixed";
+      laser.style.bottom = "0";
+      laser.style.left = Math.random() * window.innerWidth + "px";
+      laser.style.width = "2px";
+      laser.style.height = "80vh";
+      laser.style.background = `hsl(${Math.random()*360},100%,50%)`;
+      laser.style.zIndex = 9999999998;
+      laser.style.pointerEvents = "none";
+      document.body.appendChild(laser);
+      setTimeout(() => laser.remove(), 300);
+      
+      // Random grey shade overlay
+      overlay.style.background = `rgba(${50 + Math.random()*50},${50 + Math.random()*50},${50 + Math.random()*50},0.8)`;
+    }, 200);
+
+    ladraoStopTimer = setTimeout(stopLadrao, 60000);
+  }
+
+  function stopLadrao() {
+    if (ladraoInterval) { clearInterval(ladraoInterval); ladraoInterval = null; }
+    if (ladraoStopTimer) { clearTimeout(ladraoStopTimer); ladraoStopTimer = null; }
+    ladraoAudio?.pause();
+    ladraoAudio = null;
+    document.getElementById("ladrao-overlay")?.remove();
+    document.body.style.transform = "scale(1)";
+    window.activeEvents["ladrao"] = false;
+  }
+
   // ========== EVENT CHECKER (start/stop based on backend) ==========
   async function checkEvents() {
     try {
@@ -367,6 +477,19 @@
         if (!window.activeEvents["countdown"]) { window.activeEvents["countdown"] = true; startCountdown(data["countdown"].time); }
       } else {
         if (window.activeEvents["countdown"]) { stopCountdown(); window.activeEvents["countdown"] = false; }
+      }
+
+      // Phonk2 party mode
+      if (data["phonk2"]?.enabled) {
+        if (!window.activeEvents["phonk2"]) startPhonk2();
+      } else {
+        if (window.activeEvents["phonk2"]) stopPhonk2();
+      }
+
+      if (data["ladrao"]?.enabled) {
+        if (!window.activeEvents["ladrao"]) startLadrao();
+      } else {
+        if (window.activeEvents["ladrao"]) stopLadrao();
       }
 
     } catch (err) {
