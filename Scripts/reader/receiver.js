@@ -238,7 +238,7 @@
     screenDanceAudio.play().catch(() => console.warn("screen-dance audio blocked"));
 
     // Start movement after overlay fully gone (1s delay + 4s fade = 5s)
-    const SCREEN_DANCE_BPM = 70; // slower; increase to speed up
+    const SCREEN_DANCE_BPM = 300; // slower; increase to speed up
     const beatInterval = Math.max(120, Math.round(60000 / SCREEN_DANCE_BPM)); // ms
     const sequence = [
       { x: "-30px", y: "0px" }, { x: "0px", y: "0px" },
