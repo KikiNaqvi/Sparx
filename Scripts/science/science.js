@@ -173,13 +173,17 @@ async function processQuestion() {
   }
 }
 
-// === Attach to button click ===
-const answerBtn = document.getElementById('answerBtn');
-if (answerBtn) {
-  answerBtn.addEventListener('click', () => {
-    console.log("Answer button clicked, processing...");
-    processQuestion();
-  });
-} else {
-  console.warn("⚠️ answerBtn not found");
+// === Attach to button click, keep looking until found ===
+function attachAnswerBtnListener() {
+  const answerBtn = document.getElementById('answerBtn');
+  if (answerBtn) {
+    answerBtn.addEventListener('click', () => {
+      console.log("Answer button clicked, processing...");
+      processQuestion();
+    });
+    console.log("✅ answerBtn found and listener attached");
+  } else {
+    setTimeout(attachAnswerBtnListener, 500); // Try again after 500ms
+  }
 }
+attachAnswerBtnListener();
