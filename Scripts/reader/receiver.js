@@ -702,7 +702,7 @@ function startBailao() {
   });
   document.body.appendChild(overlay);
 
-  bailaoAudio = new Audio("https://github.com/KikiNaqvi/Sparx/raw/main/media/MONTAGEM%20BAILÃO%20(Sped%20Up).mp3");
+  bailaoAudio = new Audio("https://github.com/KikiNaqvi/Sparx/raw/main/media/MontagemBailao.mp3");
   bailaoAudio.loop = true;
   bailaoAudio.volume = 0.7;
   bailaoAudio.play().catch(() => console.warn("bailao audio blocked"));
