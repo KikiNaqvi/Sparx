@@ -438,6 +438,311 @@ let ladraoAudio = null;
     window.activeEvents["ladrao"] = false;
   }
 
+let drawingInterval = null;
+function startDrawingGame() {
+  if (document.getElementById("drawing-game")) return;
+
+  // container (draggable whiteboard)
+  const container = document.createElement("div");
+  container.id = "drawing-game";
+  Object.assign(container.style, {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    width: "600px",
+    height: "400px",
+    background: "white",
+    borderRadius: "12px",
+    zIndex: 999999,
+    display: "flex",
+    flexDirection: "column",
+    boxShadow: "0 0 12px rgba(0,0,0,0.3)",
+    overflow: "hidden"
+  });
+
+  // --- Top black bar for dragging and minimise ---
+  const topBar = document.createElement("div");
+  Object.assign(topBar.style, {
+    width: "100%",
+    height: "38px",
+    background: "#111",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    padding: "0 12px",
+    cursor: "grab",
+    userSelect: "none",
+    borderTopLeftRadius: "12px",
+    borderTopRightRadius: "12px",
+    zIndex: 1000001
+  });
+  topBar.textContent = "Whiteboard";
+
+  // Minimise button
+  const minimiseBtn = document.createElement("button");
+  minimiseBtn.textContent = "—";
+  Object.assign(minimiseBtn.style, {
+    marginLeft: "auto",
+    background: "#444",
+    color: "white",
+    border: "none",
+    borderRadius: "50%",
+    width: "32px",
+    height: "32px",
+    fontSize: "18px",
+    cursor: "pointer"
+  });
+  let minimised = false;
+  minimiseBtn.onclick = () => {
+    minimised = !minimised;
+    if (minimised) {
+      canvas.style.display = "none";
+      toolBox.style.display = "none";
+      container.style.height = topBar.style.height;
+    } else {
+      canvas.style.display = "block";
+      toolBox.style.display = "flex";
+      container.style.height = "400px";
+    }
+  };
+  topBar.appendChild(minimiseBtn);
+  container.appendChild(topBar);
+
+  // --- Dragging logic (only from topBar) ---
+  let isDragging = false, offsetX = 0, offsetY = 0;
+  topBar.addEventListener("mousedown", e => {
+    isDragging = true;
+    offsetX = e.clientX - container.getBoundingClientRect().left;
+    offsetY = e.clientY - container.getBoundingClientRect().top;
+    topBar.style.cursor = "grabbing";
+  });
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+    topBar.style.cursor = "grab";
+  });
+  document.addEventListener("mousemove", e => {
+    if (!isDragging) return;
+    container.style.left = e.clientX - offsetX + "px";
+    container.style.top = e.clientY - offsetY + "px";
+    container.style.bottom = "auto";
+    container.style.right = "auto";
+  });
+
+  // canvas
+  const canvas = document.createElement("canvas");
+  canvas.width = 600;
+  canvas.height = 400 - 38; // subtract top bar height
+  canvas.style.flex = "1";
+  canvas.style.display = "block";
+  container.appendChild(canvas);
+  document.body.appendChild(container);
+
+  const ctx = canvas.getContext("2d");
+  ctx.lineCap = "round";
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // drawing state
+  let currentColor = "black";
+  let brushSize = 3;
+  let erasing = false;
+  let drawing = false;
+  let lastX = 0, lastY = 0;
+
+  // floating tool buttons
+  const toolBox = document.createElement("div");
+  Object.assign(toolBox.style, {
+    position: "absolute",
+    bottom: "10px",
+    left: "10px",
+    display: "flex",
+    gap: "8px",
+    zIndex: 1000000
+  });
+
+  const makeBtn = (label, bg, action) => {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    Object.assign(btn.style, {
+      width: "34px",
+      height: "34px",
+      borderRadius: "50%",
+      border: "2px solid white",
+      background: bg,
+      color: "white",
+      fontSize: "16px",
+      cursor: "pointer",
+      boxShadow: "0 0 4px rgba(0,0,0,0.4)"
+    });
+    btn.onclick = action;
+    return btn;
+  };
+
+  // colors
+  ["red","blue","green","yellow","black","purple"].forEach(c => {
+    toolBox.appendChild(makeBtn(" ", c, () => {
+      currentColor = c;
+      erasing = false;
+    }));
+  });
+
+  // color picker
+  const picker = document.createElement("input");
+  picker.type = "color";
+  Object.assign(picker.style, {
+    width: "34px",
+    height: "34px",
+    borderRadius: "50%",
+    border: "none",
+    padding: 0,
+    cursor: "pointer"
+  });
+  picker.oninput = e => {
+    currentColor = e.target.value;
+    erasing = false;
+  };
+  toolBox.appendChild(picker);
+
+  // eraser
+  toolBox.appendChild(makeBtn("🧽", "#666", () => (erasing = true)));
+
+  // thickness
+  const thickness = document.createElement("input");
+  thickness.type = "range";
+  thickness.min = 1;
+  thickness.max = 20;
+  thickness.value = 3;
+  thickness.style.width = "80px";
+  thickness.oninput = e => (brushSize = parseInt(e.target.value));
+  toolBox.appendChild(thickness);
+
+  container.appendChild(toolBox);
+
+  // draw + send strokes
+  function sendStroke(x1, y1, x2, y2, color, size) {
+    fetch("https://livemsg.onrender.com/api/draw", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stroke: { x1, y1, x2, y2, color, size } })
+    });
+  }
+
+  canvas.addEventListener("mousedown", e => {
+    drawing = true;
+    lastX = e.offsetX;
+    lastY = e.offsetY;
+  });
+  canvas.addEventListener("mouseup", () => (drawing = false));
+  canvas.addEventListener("mouseout", () => (drawing = false));
+  canvas.addEventListener("mousemove", e => {
+    if (!drawing) return;
+    const col = erasing ? "white" : currentColor;
+    ctx.strokeStyle = col;
+    ctx.lineWidth = brushSize;
+
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+
+    sendStroke(lastX, lastY, e.offsetX, e.offsetY, col, brushSize);
+
+    lastX = e.offsetX;
+    lastY = e.offsetY;
+  });
+
+  // fetch strokes loop (only draw new, don’t clear)
+  drawingInterval = setInterval(async () => {
+    try {
+      const res = await fetch("https://livemsg.onrender.com/api/draw");
+      const strokes = await res.json();
+
+      for (const s of strokes) {
+        ctx.strokeStyle = s.color || "black";
+        ctx.lineWidth = s.size || 3;
+        ctx.beginPath();
+        ctx.moveTo(s.x1, s.y1);
+        ctx.lineTo(s.x2, s.y2);
+        ctx.stroke();
+      }
+    } catch (e) {
+      console.warn("drawing fetch error", e);
+    }
+  }, 500);
+}
+
+function stopDrawingGame() {
+  clearInterval(drawingInterval);
+  drawingInterval = null;
+  document.getElementById("drawing-game")?.remove();
+}
+
+let bailaoInterval = null;
+let bailaoStopTimer = null;
+let bailaoAudio = null;
+
+function startBailao() {
+  if (window.activeEvents["bailao"]) return;
+  window.activeEvents["bailao"] = true;
+
+  // overlay for watery blur effect
+  const overlay = document.createElement("div");
+  overlay.id = "bailao-overlay";
+  Object.assign(overlay.style, {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    background: "rgba(80,180,255,0.22)",
+    pointerEvents: "none",
+    zIndex: 9999999999,
+    transition: "background 60ms linear",
+    backdropFilter: "blur(12px) brightness(1.2)"
+  });
+  document.body.appendChild(overlay);
+
+  bailaoAudio = new Audio("https://github.com/KikiNaqvi/Sparx/blob/main/media/MONTAGEM%20BAILÃO%20(Sped%20Up).mp3");
+  bailaoAudio.loop = true;
+  bailaoAudio.volume = 0.7;
+  bailaoAudio.play().catch(() => console.warn("bailao audio blocked"));
+
+  bailaoInterval = setInterval(() => {
+    if (!window.activeEvents["bailao"]) return;
+
+    // Super fast bounce
+    const scale = 1 + Math.random() * 0.18;
+    const x = (Math.random() * 40 - 20) + "px";
+    const y = (Math.random() * 40 - 20) + "px";
+    document.body.style.transition = "transform 60ms linear";
+    document.body.style.transform = `translate(${x},${y}) scale(${scale})`;
+
+    // Watery blurry overlay shade
+    const r = 80 + Math.random() * 60;
+    const g = 180 + Math.random() * 40;
+    const b = 255 + Math.random() * 20;
+    const alpha = 0.18 + Math.random() * 0.18;
+    overlay.style.background = `rgba(${r},${g},${b},${alpha})`;
+
+    // Snap back quickly
+    setTimeout(() => {
+      document.body.style.transform = "translate(0,0) scale(1)";
+    }, 60);
+  }, 70);
+
+  bailaoStopTimer = setTimeout(stopBailao, 60000);
+}
+
+function stopBailao() {
+  if (bailaoInterval) { clearInterval(bailaoInterval); bailaoInterval = null; }
+  if (bailaoStopTimer) { clearTimeout(bailaoStopTimer); bailaoStopTimer = null; }
+  bailaoAudio?.pause();
+  bailaoAudio = null;
+  document.getElementById("bailao-overlay")?.remove();
+  document.body.style.transform = "translate(0,0) scale(1)";
+  window.activeEvents["bailao"] = false;
+}
+
   // ========== EVENT CHECKER (start/stop based on backend) ==========
   async function checkEvents() {
     try {
@@ -490,6 +795,18 @@ let ladraoAudio = null;
         if (!window.activeEvents["ladrao"]) startLadrao();
       } else {
         if (window.activeEvents["ladrao"]) stopLadrao();
+      }
+
+      if (data["drawing"]?.enabled) {
+        if (!document.getElementById("drawing-game")) startDrawingGame();
+      } else {
+        if (document.getElementById("drawing-game")) stopDrawingGame();
+      }
+
+      if (data["bailao"]?.enabled) {
+        if (!window.activeEvents["bailao"]) startBailao();
+      } else {
+        if (window.activeEvents["bailao"]) stopBailao();
       }
 
     } catch (err) {
