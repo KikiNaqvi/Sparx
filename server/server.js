@@ -1,3 +1,4 @@
+// ====== server.js ======
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -7,7 +8,7 @@ app.use(express.json());
 
 // ----- Message System -----
 let latestMessage = "";
-let latestTimestamp = 0; // store Unix time in ms
+let latestTimestamp = 0;
 
 app.post("/msg/send", (req, res) => {
   const { message } = req.body;
@@ -26,7 +27,6 @@ app.get("/msg/latest", (req, res) => {
 // ----- Event System -----
 let events = {}; // store enabled events
 
-// Utility: auto-disable events except countdown
 function setEventAutoDisable(eventName, time = null) {
   events[eventName] = {
     enabled: true,
@@ -36,18 +36,16 @@ function setEventAutoDisable(eventName, time = null) {
 
   console.log(`🎉 Event set: ${eventName} ${time ? `(time: ${time})` : ""}`);
 
-  // Auto-disable all except countdown
   if (eventName !== "countdown") {
     setTimeout(() => {
       if (events[eventName]) {
         events[eventName].enabled = false;
         console.log(`⏱️ Event automatically disabled: ${eventName}`);
       }
-    }, 60000); // 1 minute
+    }, 60000);
   }
 }
 
-// ----- Set Event Endpoint -----
 app.post("/api/setevent", (req, res) => {
   const { event, time } = req.body;
   if (!event) return res.status(400).json({ error: "No event name provided" });
@@ -56,15 +54,37 @@ app.post("/api/setevent", (req, res) => {
   res.json({ status: "ok", event: events[event] });
 });
 
-// ----- Get Events Endpoint -----
 app.get("/api/events", (req, res) => {
   res.json(events);
 });
 
-// ----- Clear All Events -----
 app.post("/api/clearevents", (req, res) => {
   events = {};
   console.log("🛑 All events cleared");
+  res.json({ status: "ok", cleared: true });
+});
+
+// ======================
+// 🎨 Multiplayer Drawing
+// ======================
+let drawingStrokes = []; // store all strokes globally
+
+app.post("/api/draw", (req, res) => {
+  const { stroke } = req.body;
+  if (!stroke) return res.status(400).json({ error: "No stroke data provided" });
+
+  drawingStrokes.push(stroke);
+  if (drawingStrokes.length > 500) drawingStrokes.shift(); // keep recent only
+  res.json({ status: "ok" });
+});
+
+app.get("/api/draw", (req, res) => {
+  res.json(drawingStrokes);
+});
+
+app.post("/api/draw/clear", (req, res) => {
+  drawingStrokes = [];
+  console.log("🧹 Drawing canvas cleared");
   res.json({ status: "ok", cleared: true });
 });
 
