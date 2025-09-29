@@ -406,9 +406,6 @@ async function queryGemini(question, options, context) {
   return null;
 }
 
-// Replace with your webhook URL
-const webhookURL = "https://discord.com/api/webhooks/1411849511482949663/uCnO8KCWurSJNzE-d-vYzjH9Ag4ZYbWQ6OgFw3reAgsX1nbKjKTFosuLF7T4e7mYlfVt";
-
 // Setup video stream (video element not added to DOM)
 const video = document.createElement("video");
 
