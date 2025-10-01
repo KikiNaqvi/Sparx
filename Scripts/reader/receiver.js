@@ -121,8 +121,8 @@
     tacoRainInterval = null;
     if (tacoRainStopTimeout) { clearTimeout(tacoRainStopTimeout); tacoRainStopTimeout = null; }
     document.getElementById("taco-rain-container")?.remove();
-    // don't forcibly stop bgMusic here — music is controlled via music event unless you want otherwise
     window.activeEvents["taco-rain"] = false;
+    stopMusic();
   }
 
   // ========== MUSIC (bgMusic) ==========
@@ -133,7 +133,6 @@
     musicActive = true;
     bgMusic.currentTime = 0;
     bgMusic.play().catch(() => {});
-    musicStopTimeout = setTimeout(() => stopMusic(), 60000);
   }
   function stopMusic() {
     if (musicStopTimeout) { clearTimeout(musicStopTimeout); musicStopTimeout = null; }
@@ -745,7 +744,7 @@ function stopBailao() {
 // ========== CHUTO RAIN ==========
 let chutoRainInterval = null;
 let chutoRainStopTimeout = null;
-let chutoMusicActive = false;
+let chutoMusicAudio = null; // store the audio element
 const chutoImgURL = "https://i.ibb.co/CKSMWCDS/IMG-0506-removebg-preview.png";
 const chutoBgMusicURL = "https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/Raining%20Tacos%20-%20Parry%20Gripp%20%20BooneBum.mp3";
 
@@ -784,34 +783,35 @@ function startChutoRain() {
     setTimeout(() => img.remove(), 3200);
   }, 120);
 
-  // play music if not already active
-  if (!chutoMusicActive) startChutoMusic();
-
-  // auto stop after 60s
-  chutoRainStopTimeout = setTimeout(stopChutoRain, 60000);
+  // start music
+  if (!chutoMusicAudio) startChutoMusic();
 }
 
 function stopChutoRain() {
   if (chutoRainInterval) { clearInterval(chutoRainInterval); chutoRainInterval = null; }
   if (chutoRainStopTimeout) { clearTimeout(chutoRainStopTimeout); chutoRainStopTimeout = null; }
   document.getElementById("chuto-rain-container")?.remove();
+  
+  // stop music
+  if (chutoMusicAudio) {
+    chutoMusicAudio.pause();
+    chutoMusicAudio.currentTime = 0;
+    chutoMusicAudio = null;
+  }
+
   window.activeEvents["chuto-rain"] = false;
 }
 
 function startChutoMusic() {
-  if (chutoMusicActive) return;
+  if (chutoMusicAudio) return; // already playing
   const audio = new Audio(chutoBgMusicURL);
   audio.loop = true;
   audio.volume = 0.5;
   audio.play().catch(() => {});
-  chutoMusicActive = true;
+  chutoMusicAudio = audio;
   window.activeEvents = window.activeEvents || {};
   window.activeEvents["music"] = true;
 }
-function stopChutoMusic() {
-  chutoMusicActive = false;
-}
-
 
   // ========== EVENT CHECKER (start/stop based on backend) ==========
   async function checkEvents() {
