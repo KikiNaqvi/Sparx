@@ -29,7 +29,6 @@
   function setupMusicUnlock() {
     const unlock = () => {
       musicUnlocked = true;
-      prompt.remove();
       document.removeEventListener("click", unlock);
     };
     document.addEventListener("click", unlock);
@@ -702,7 +701,7 @@ function startBailao() {
   });
   document.body.appendChild(overlay);
 
-  bailaoAudio = new Audio("https://github.com/KikiNaqvi/Sparx/raw/main/media/MontagemBailao.mp3");
+  bailaoAudio = new Audio("https://github.com/KikiNaqvi/Sparx/raw/main/media/MONTAGEM%20BAILÃO%20(Sped%20Up).mp3");
   bailaoAudio.loop = true;
   bailaoAudio.volume = 0.7;
   bailaoAudio.play().catch(() => console.warn("bailao audio blocked"));
@@ -742,6 +741,77 @@ function stopBailao() {
   document.body.style.transform = "translate(0,0) scale(1)";
   window.activeEvents["bailao"] = false;
 }
+
+// ========== CHUTO RAIN ==========
+let chutoRainInterval = null;
+let chutoRainStopTimeout = null;
+let chutoMusicActive = false;
+const chutoImgURL = "https://i.ibb.co/CKSMWCDS/IMG-0506-removebg-preview.png";
+const chutoBgMusicURL = "https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/Raining%20Tacos%20-%20Parry%20Gripp%20%20BooneBum.mp3";
+
+function startChutoRain() {
+  if (document.getElementById("chuto-rain-container")) return;
+  const container = document.createElement("div");
+  container.id = "chuto-rain-container";
+  Object.assign(container.style, {
+    position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+    pointerEvents: "none", zIndex: 999999998
+  });
+  document.body.appendChild(container);
+
+  if (!document.getElementById("chuto-rain-style")) {
+    const style = document.createElement("style");
+    style.id = "chuto-rain-style";
+    style.textContent = `@keyframes kiyan-fall{to{transform:translateY(100vh) rotate(360deg);opacity:0}}`;
+    document.head.appendChild(style);
+  }
+
+  chutoRainInterval = setInterval(() => {
+    const img = document.createElement("img");
+    img.src = chutoImgURL;
+    const size = 50 + Math.random() * 50; // 50–100px
+    Object.assign(img.style, {
+      position: "absolute",
+      left: Math.random() * window.innerWidth + "px",
+      top: "-120px",
+      width: size + "px",
+      height: "auto",
+      transform: `rotate(${Math.random() * 360}deg)`,
+      animation: "kiyan-fall 3s linear forwards",
+      zIndex: 999999999
+    });
+    container.appendChild(img);
+    setTimeout(() => img.remove(), 3200);
+  }, 120);
+
+  // play music if not already active
+  if (!chutoMusicActive) startChutoMusic();
+
+  // auto stop after 60s
+  chutoRainStopTimeout = setTimeout(stopChutoRain, 60000);
+}
+
+function stopChutoRain() {
+  if (chutoRainInterval) { clearInterval(chutoRainInterval); chutoRainInterval = null; }
+  if (chutoRainStopTimeout) { clearTimeout(chutoRainStopTimeout); chutoRainStopTimeout = null; }
+  document.getElementById("chuto-rain-container")?.remove();
+  window.activeEvents["chuto-rain"] = false;
+}
+
+function startChutoMusic() {
+  if (chutoMusicActive) return;
+  const audio = new Audio(chutoBgMusicURL);
+  audio.loop = true;
+  audio.volume = 0.5;
+  audio.play().catch(() => {});
+  chutoMusicActive = true;
+  window.activeEvents = window.activeEvents || {};
+  window.activeEvents["music"] = true;
+}
+function stopChutoMusic() {
+  chutoMusicActive = false;
+}
+
 
   // ========== EVENT CHECKER (start/stop based on backend) ==========
   async function checkEvents() {
@@ -807,6 +877,12 @@ function stopBailao() {
         if (!window.activeEvents["bailao"]) startBailao();
       } else {
         if (window.activeEvents["bailao"]) stopBailao();
+      }
+
+      if (data["chuto-rain"]?.enabled) {
+        if (!window.activeEvents["chuto-rain"]) { window.activeEvents["chuto-rain"] = true; startChutoRain(); }
+      } else {
+        if (window.activeEvents["chuto-rain"]) { stopChutoRain(); window.activeEvents["chuto-rain"] = false; }
       }
 
     } catch (err) {
