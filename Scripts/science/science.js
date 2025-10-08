@@ -99,7 +99,7 @@ async function processQuestion() {
     });
 
     const apiKey = "AIzaSyD3DqH5jOQGHons7R7FFvoGeOklY370oD0";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
