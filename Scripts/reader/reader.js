@@ -284,21 +284,25 @@ if (!document.getElementById('sparx-cheat-popup')) {
     }
   });
   document.addEventListener("mouseup", () => { isDragging = false; });
-
-  popupHeader.addEventListener("touchstart", (e) => {
+  
+popupHeader.addEventListener("touchstart", (e) => {
     if (e.target.closest('.window-controls')) return;
     isDragging = true;
-    offsetX = e.clientX - wrapper.offsetLeft;
-    offsetY = e.clientY - wrapper.offsetTop;
-  });
-  document.addEventListener("touchmove", (e) => {
-    if (isDragging) {
-      wrapper.style.left = `${e.clientX - offsetX}px`;
-      wrapper.style.top = `${e.clientY - offsetY}px`;
-    }
-  });
-  document.addEventListener("touchend", () => { isDragging = false; });
+    const touch = e.touches[0];
+    offsetX = touch.clientX - wrapper.offsetLeft;
+    offsetY = touch.clientY - wrapper.offsetTop;
+});
 
+document.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+    wrapper.style.left = `${touch.clientX - offsetX}px`;
+    wrapper.style.top = `${touch.clientY - offsetY}px`;
+    e.preventDefault(); // prevents scrolling while dragging
+});
+
+document.addEventListener("touchend", () => { isDragging = false; });
+  
   // --- Particle Animation ---
   for (let i = 0; i < 15; i++) {
     const p = document.createElement('div');
