@@ -88,6 +88,29 @@ app.post("/api/draw/clear", (req, res) => {
   res.json({ status: "ok", cleared: true });
 });
 
+// ======================
+// 🔑 API Key System
+// ======================
+const userKeys = {}; // username -> API key
+
+// Save API key
+app.post("/api/saveKey", (req, res) => {
+  const { username, key } = req.body;
+  if (!username || !key) return res.status(400).json({ error: "Missing username or key" });
+
+  userKeys[username] = key;
+  console.log(`🔑 Saved API key for user: ${username}`);
+  res.json({ success: true });
+});
+
+// Check if user has key
+app.get("/api/checkKey", (req, res) => {
+  const username = req.query.username;
+  if (!username) return res.status(400).json({ error: "Missing username" });
+
+  res.json({ hasKey: !!userKeys[username] });
+});
+
 // ----- Boot -----
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
