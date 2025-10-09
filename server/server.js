@@ -108,7 +108,11 @@ app.get("/api/checkKey", (req, res) => {
   const username = req.query.username;
   if (!username) return res.status(400).json({ error: "Username missing" });
 
-  res.json({ hasKey: !!userKeys[username] });
+  const key = userKeys[username] || null;
+  res.json({ 
+    hasKey: !!key,
+    apiKey: key // <-- now returns the stored API key
+  });
 });
 
 // ======================
