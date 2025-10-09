@@ -89,29 +89,31 @@ app.post("/api/draw/clear", (req, res) => {
 });
 
 // ======================
-// 🔑 API Key System
+// 🔑 User API Key System
 // ======================
-const userKeys = {}; // username -> API key
+let userKeys = {}; // store username -> API key mapping
 
-// Save API key
+// Save user API key
 app.post("/api/saveKey", (req, res) => {
   const { username, key } = req.body;
-  if (!username || !key) return res.status(400).json({ error: "Missing username or key" });
+  if (!username || !key) return res.status(400).json({ error: "Username or key missing" });
 
   userKeys[username] = key;
-  console.log(`🔑 Saved API key for user: ${username}`);
-  res.json({ success: true });
+  console.log(`🔑 Stored API key for user: ${username}`);
+  res.json({ status: "ok", saved: true });
 });
 
-// Check if user has key
+// Check if user has an API key
 app.get("/api/checkKey", (req, res) => {
   const username = req.query.username;
-  if (!username) return res.status(400).json({ error: "Missing username" });
+  if (!username) return res.status(400).json({ error: "Username missing" });
 
   res.json({ hasKey: !!userKeys[username] });
 });
 
+// ======================
 // ----- Boot -----
+// ======================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
