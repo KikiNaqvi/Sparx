@@ -1,12 +1,27 @@
 // ====== server.js ======
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// ----- Message System -----
+// ====== MongoDB Connection ======
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => console.error("❌ MongoDB connection failed:", err));
+
+// ====== Mongoose Schema ======
+const userKeySchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  key: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+});
+const UserKey = mongoose.model("UserKey", userKeySchema);
+
+// ====== Message System ======
 let latestMessage = "";
 let latestTimestamp = 0;
 
@@ -24,8 +39,8 @@ app.get("/msg/latest", (req, res) => {
   res.json({ message: latestMessage, timestamp: latestTimestamp });
 });
 
-// ----- Event System -----
-let events = {}; // store enabled events
+// ====== Event System ======
+let events = {};
 
 function setEventAutoDisable(eventName, time = null) {
   events[eventName] = {
@@ -64,23 +79,19 @@ app.post("/api/clearevents", (req, res) => {
   res.json({ status: "ok", cleared: true });
 });
 
-// ======================
-// 🎨 Multiplayer Drawing
-// ======================
-let drawingStrokes = []; // store all strokes globally
+// ====== Multiplayer Drawing ======
+let drawingStrokes = [];
 
 app.post("/api/draw", (req, res) => {
   const { stroke } = req.body;
   if (!stroke) return res.status(400).json({ error: "No stroke data provided" });
 
   drawingStrokes.push(stroke);
-  if (drawingStrokes.length > 500) drawingStrokes.shift(); // keep recent only
+  if (drawingStrokes.length > 500) drawingStrokes.shift();
   res.json({ status: "ok" });
 });
 
-app.get("/api/draw", (req, res) => {
-  res.json(drawingStrokes);
-});
+app.get("/api/draw", (req, res) => res.json(drawingStrokes));
 
 app.post("/api/draw/clear", (req, res) => {
   drawingStrokes = [];
@@ -88,37 +99,34 @@ app.post("/api/draw/clear", (req, res) => {
   res.json({ status: "ok", cleared: true });
 });
 
-// ======================
-// 🔑 User API Key System
-// ======================
-let userKeys = {}; // store username -> API key mapping
-
-// Save user API key
-app.post("/api/saveKey", (req, res) => {
+// ====== 🔑 User API Key System (MongoDB) ======
+app.post("/api/saveKey", async (req, res) => {
   const { username, key } = req.body;
-  if (!username || !key) return res.status(400).json({ error: "Username or key missing" });
+  if (!username || !key) return res.status(400).json({ error: "Missing username or key" });
 
-  userKeys[username] = key;
-  console.log(`🔑 Stored API key for user: ${username}`);
-  res.json({ status: "ok", saved: true });
+  try {
+    await UserKey.findOneAndUpdate({ username }, { key }, { upsert: true });
+    console.log(`🔑 Saved key for ${username}`);
+    res.json({ status: "ok", saved: true });
+  } catch (err) {
+    console.error("❌ Error saving key:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
-// Check if user has an API key
-app.get("/api/checkKey", (req, res) => {
-  const username = req.query.username;
+app.get("/api/checkKey", async (req, res) => {
+  const { username } = req.query;
   if (!username) return res.status(400).json({ error: "Username missing" });
 
-  const key = userKeys[username] || null;
-  res.json({ 
-    hasKey: !!key,
-    apiKey: key // <-- now returns the stored API key
-  });
+  try {
+    const found = await UserKey.findOne({ username });
+    res.json({ hasKey: !!found, apiKey: found?.key || null });
+  } catch (err) {
+    console.error("❌ Error checking key:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
-// ======================
-// ----- Boot -----
-// ======================
+// ====== Boot ======
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
