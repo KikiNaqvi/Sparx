@@ -127,6 +127,16 @@ app.get("/api/checkKey", async (req, res) => {
   }
 });
 
+app.get("/api/testMongo", async (req, res) => {
+  try {
+    await mongoose.connection.db.admin().ping();
+    res.json({ status: "✅ MongoDB connected successfully!" });
+  } catch (err) {
+    console.error("❌ MongoDB ping error:", err);
+    res.status(500).json({ error: "MongoDB not connected" });
+  }
+});
+
 // ====== Boot ======
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
