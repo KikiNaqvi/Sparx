@@ -55,6 +55,7 @@ function setEventAutoDisable(eventName, time = null) {
 
   if (eventName !== "countdown") {
     setTimeout(() => {
+      const duration = eventName === "custom-image" ? 5000 : 60000;
       if (events[eventName]) {
         events[eventName].enabled = false;
         console.log(`⏱️ Event automatically disabled: ${eventName}`);
