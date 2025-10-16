@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const app = express();
+const multer = require("multer");
+const path = require("path");
 
 app.use(cors());
 app.use(express.json());
@@ -136,6 +138,27 @@ app.get("/api/testMongo", async (req, res) => {
     res.status(500).json({ error: "MongoDB not connected" });
   }
 });
+
+// ====== Image Upload Handling ======
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "uploads"));
+  },
+  filename: (req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage });
+
+app.post("/api/upload-image", upload.single("image"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+  console.log("📸 Image uploaded:", imageUrl);
+  res.json({ url: imageUrl });
+});
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ====== Boot ======
 const PORT = process.env.PORT || 3000;
