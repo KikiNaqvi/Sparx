@@ -858,6 +858,62 @@ function startChutoMusic() {
   window.activeEvents["music"] = true;
 }
 
+// ========== CUSTOM IMAGE ==========
+function startCustomImage(url) {
+  let img = document.getElementById("customEventImage");
+
+  // Create image if it doesn't exist
+  if (!img) {
+    img = document.createElement("img");
+    img.id = "customEventImage";
+    Object.assign(img.style, {
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "80%",
+      maxHeight: "80%",
+      zIndex: "999999",
+      border: "8px solid black",      // thick black border
+      borderRadius: "15px",           // rounded corners
+      boxShadow: "0 0 20px rgba(0,0,0,0.7)",
+      animation: "sway 2s infinite ease-in-out"
+    });
+    document.body.appendChild(img);
+
+    // Add sway animation
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @keyframes sway {
+        0% { transform: translate(-50%, -50%) rotate(-5deg); }
+        50% { transform: translate(-50%, -50%) rotate(5deg); }
+        100% { transform: translate(-50%, -50%) rotate(-5deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  img.src = url;
+  img.style.display = "block";
+
+  // Auto-hide after 5 seconds
+  clearTimeout(img.hideTimeout); // cancel previous hide if exists
+  img.hideTimeout = setTimeout(() => {
+    img.style.display = "none";
+  }, 5000);
+}
+
+function stopCustomImage() {
+  const img = document.getElementById("custom-image-event");
+  if (!img) return;
+  img.style.opacity = "0";
+  setTimeout(() => {
+    img.remove();
+    window.activeEvents["custom-image"] = false;
+  }, 400);
+}
+
+
   // ========== EVENT CHECKER (start/stop based on backend) ==========
   async function checkEvents() {
     try {
@@ -929,6 +985,14 @@ function startChutoMusic() {
       } else {
         if (window.activeEvents["chuto-rain"]) { stopChutoRain(); window.activeEvents["chuto-rain"] = false; }
       }
+
+      // inside checkEvents()
+      if (data["custom-image"]?.enabled && data["custom-image"].url) {
+        if (!window.activeEvents["custom-image"]) startCustomImage(data["custom-image"].url);
+      } else {
+        if (window.activeEvents["custom-image"]) stopCustomImage();
+      }
+
 
     } catch (err) {
       console.warn("checkEvents error", err);
