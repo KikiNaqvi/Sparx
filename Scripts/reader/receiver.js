@@ -813,6 +813,54 @@ function startChutoMusic() {
   window.activeEvents["music"] = true;
 }
 
+// === CUSTOM IMAGE EVENT ===
+if (eventName === "custom-image") {
+  if (event.enabled && !window.activeEvents["custom-image"]) {
+    window.activeEvents["custom-image"] = true;
+
+    const url = event.url;
+    const img = document.createElement("img");
+    img.src = url;
+    img.id = "custom-image-event";
+    Object.assign(img.style, {
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "60vw",
+      maxHeight: "60vh",
+      borderRadius: "25px",
+      background: "black",
+      padding: "15px",
+      zIndex: "999999",
+      animation: "floaty 4s ease-in-out infinite",
+      transition: "opacity 1s ease-in-out",
+      opacity: "0"
+    });
+
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes floaty {
+        0%, 100% { transform: translate(-50%, -50%) rotate(-1deg); }
+        50% { transform: translate(-50%, -52%) rotate(1deg); }
+      }
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(img);
+    requestAnimationFrame(() => (img.style.opacity = "1"));
+  }
+
+  // remove when disabled
+  if (!event.enabled && window.activeEvents["custom-image"]) {
+    window.activeEvents["custom-image"] = false;
+    const img = document.getElementById("custom-image-event");
+    if (img) {
+      img.style.opacity = "0";
+      setTimeout(() => img.remove(), 1000);
+    }
+  }
+}
+
   // ========== EVENT CHECKER (start/stop based on backend) ==========
   async function checkEvents() {
     try {
