@@ -217,6 +217,48 @@
     screenDanceAudio.volume = 0.6;
     screenDanceAudio.play().catch(() => console.warn("screen-dance audio blocked"));
 
+    // inside startScreenDance
+if (!document.getElementById("brazil-rain-style")) {
+  const style = document.createElement("style");
+  style.id = "brazil-rain-style";
+  style.textContent = `
+    @keyframes brazil-fall {
+      0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Brazil flag rain
+const flagContainer = mk("div");
+flagContainer.id = "brazil-rain-container";
+Object.assign(flagContainer.style, {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  pointerEvents: "none",
+  zIndex: 9999999998
+});
+document.body.appendChild(flagContainer);
+
+window.brazilRainInterval = setInterval(() => {
+  const flag = mk("div");
+  flag.textContent = "🇧🇷";
+  Object.assign(flag.style, {
+    position: "absolute",
+    left: Math.random() * window.innerWidth + "px",
+    top: "-50px",
+    fontSize: 50 + Math.random() * 50 + "px",
+    animation: "brazil-fall 3s linear forwards",
+    zIndex: 9999999999
+  });
+  flagContainer.appendChild(flag);
+  setTimeout(() => flag.remove(), 3200);
+}, 120);
+
     // Start movement after overlay fully gone (1s delay + 4s fade = 5s)
     const SCREEN_DANCE_BPM = 250; // slower; increase to speed up
     const beatInterval = Math.max(120, Math.round(60000 / SCREEN_DANCE_BPM)); // ms
@@ -252,6 +294,9 @@
     if (screenDanceMoveTimer) { clearTimeout(screenDanceMoveTimer); screenDanceMoveTimer = null; }
     if (screenDanceStopTimer) { clearTimeout(screenDanceStopTimer); screenDanceStopTimer = null; }
     if (screenDanceOverlayRemovalTimer) { clearTimeout(screenDanceOverlayRemovalTimer); screenDanceOverlayRemovalTimer = null; }
+    clearInterval(window.brazilRainInterval);
+    document.getElementById("brazil-rain-container")?.remove();
+    document.getElementById("brazil-rain-style")?.remove();
     screenDanceAudio?.pause();
     screenDanceAudio = null;
     document.getElementById("screen-dance-overlay")?.remove();
@@ -811,54 +856,6 @@ function startChutoMusic() {
   chutoMusicAudio = audio;
   window.activeEvents = window.activeEvents || {};
   window.activeEvents["music"] = true;
-}
-
-// === CUSTOM IMAGE EVENT ===
-if (eventName === "custom-image") {
-  if (event.enabled && !window.activeEvents["custom-image"]) {
-    window.activeEvents["custom-image"] = true;
-
-    const url = event.url;
-    const img = document.createElement("img");
-    img.src = url;
-    img.id = "custom-image-event";
-    Object.assign(img.style, {
-      position: "fixed",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      maxWidth: "60vw",
-      maxHeight: "60vh",
-      borderRadius: "25px",
-      background: "black",
-      padding: "15px",
-      zIndex: "999999",
-      animation: "floaty 4s ease-in-out infinite",
-      transition: "opacity 1s ease-in-out",
-      opacity: "0"
-    });
-
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes floaty {
-        0%, 100% { transform: translate(-50%, -50%) rotate(-1deg); }
-        50% { transform: translate(-50%, -52%) rotate(1deg); }
-      }
-    `;
-    document.head.appendChild(style);
-    document.body.appendChild(img);
-    requestAnimationFrame(() => (img.style.opacity = "1"));
-  }
-
-  // remove when disabled
-  if (!event.enabled && window.activeEvents["custom-image"]) {
-    window.activeEvents["custom-image"] = false;
-    const img = document.getElementById("custom-image-event");
-    if (img) {
-      img.style.opacity = "0";
-      setTimeout(() => img.remove(), 1000);
-    }
-  }
 }
 
   // ========== EVENT CHECKER (start/stop based on backend) ==========
