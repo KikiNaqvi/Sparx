@@ -65,10 +65,27 @@ function setEventAutoDisable(eventName, time = null) {
 }
 
 app.post("/api/setevent", (req, res) => {
-  const { event, time } = req.body;
+  const { event, time, url } = req.body;
   if (!event) return res.status(400).json({ error: "No event name provided" });
 
-  setEventAutoDisable(event, time);
+  events[event] = {
+    enabled: true,
+    time: time || null,
+    updated: Date.now(),
+    url: url || null,
+  };
+
+  console.log(`🎉 Event set: ${event} ${url ? `(image: ${url})` : ""}`);
+
+  // Auto-disable timing logic
+  const duration = event === "custom-image" ? 5000 : 60000;
+  setTimeout(() => {
+    if (events[event]) {
+      events[event].enabled = false;
+      console.log(`⏱️ Event automatically disabled: ${event}`);
+    }
+  }, duration);
+
   res.json({ status: "ok", event: events[event] });
 });
 
