@@ -53,7 +53,6 @@ function showTopNotif(message, type = 'error', duration = 3500) {
   }, duration);
 }
 
-
 // === Find Username (wait for login) ===
 function findUsername() {
   return new Promise((resolve) => {
@@ -67,7 +66,7 @@ function findUsername() {
         username = nameDivs[8].textContent.trim();
         console.log("Username found:", username);
         clearInterval(usernameInterval);
-        resolve(username); // ✅ resolve the Promise with the username
+        resolve(username);
       } else {
         console.log("Username not yet found. Retrying...");
       }
@@ -83,29 +82,27 @@ async function checkUserApiKey(username) {
     const data = await res.json();
     
     if(data.hasKey) {
-      userApiKey = data.apiKey; // ✅ automatically store the user's key
+      userApiKey = data.apiKey;
     }
     
-    return data.hasKey; // still returns true/false
+    return data.hasKey;
   } catch (e) {
     console.error("Error checking API key:", e);
     return false;
   }
 }
 
-// After username is found:
 findUsername().then(async () => {
   const hasKey = await checkUserApiKey(username);
   if (!hasKey) {
-    showApiKeyPopup(); // only show popup if no key saved
+    showApiKeyPopup();
   } else {
     console.log("✅ Using saved API key from server:", userApiKey);
-    startScanning(); // continue normal script
+    startScanning();
   }
 });
 
 async function sendApiKeyToServer(username, key) {
-  // Strict validator: must start with "AIza" and be exactly 39 chars
   const VALIDATOR = {
     prefixes: ['AIza'],
     exactLength: 39
@@ -144,11 +141,9 @@ async function sendApiKeyToServer(username, key) {
   }
 }
 
-
 function showApiKeyPopup() {
   if (document.getElementById('sparx-key-popup')) return;
 
-  // --- Load Font Awesome ---
   if (!document.querySelector('link[href*="font-awesome"]')) {
     const fa = document.createElement('link');
     fa.rel = 'stylesheet';
@@ -157,7 +152,6 @@ function showApiKeyPopup() {
     document.head.appendChild(fa);
   }
 
-  // --- Modal wrapper ---
   const wrapper = document.createElement('div');
   wrapper.id = 'sparx-key-popup';
   wrapper.style.position = 'fixed';
@@ -171,7 +165,6 @@ function showApiKeyPopup() {
   wrapper.style.background = 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.5) 100%)';
   wrapper.style.zIndex = '999999';
 
-  // --- Modal content ---
   const modal = document.createElement('div');
   modal.style.background = 'rgba(28,28,28,0.98)';
   modal.style.borderRadius = '14px';
@@ -184,13 +177,10 @@ function showApiKeyPopup() {
   modal.style.boxShadow = '0 0 30px rgba(0,0,0,0.85)';
 
   modal.innerHTML = `
-    <!-- Header with logo and title -->
     <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
       <img src="https://kikinaqvi.github.io/Sparx/icon.png" style="width:60px; height:60px; border-radius:10px;">
       <h2 style="margin:0; font-size:1.6em; color:#fff;">SparxCheat AI Key</h2>
     </div>
-
-    <!-- Instructions -->
     <div style="
       background: rgba(255,255,255,0.05);
       border-radius: 10px; padding: 15px;
@@ -204,15 +194,11 @@ function showApiKeyPopup() {
       5. Select a default project, name the key <strong>SparxCheat</strong>, and click <strong>Create API Key</strong><br>
       6. Copy the key and paste it below
     </div>
-
-    <!-- API Key Input -->
     <input id="sparxApiKeyInput" type="text" placeholder="Paste API key here" style="
       width: 100%; padding: 12px 14px; border-radius: 10px;
       border: none; margin-bottom: 20px; background: rgba(255,255,255,0.05);
       color: #fff; font-size: 15px; outline:none;
     ">
-
-    <!-- Buttons -->
     <div style="display: flex; flex-direction: column; gap: 12px;">
       <button id="sendApiKeyBtn" class="cheat-btn">
         <i class="fa fa-paper-plane"></i> Send Key
@@ -226,24 +212,21 @@ function showApiKeyPopup() {
   wrapper.appendChild(modal);
   document.body.appendChild(wrapper);
 
-  // --- Button actions ---
   document.getElementById('sendApiKeyBtn').addEventListener('click', async () => {
     const key = document.getElementById('sparxApiKeyInput').value.trim();
     if (!key) return alert("Please enter your API key!");
     
-    userApiKey = key;  // ✅ store the user's key
+    userApiKey = key;
     wrapper.remove();
     await sendApiKeyToServer(username, key);
     startScanning();
   });
-
 
   document.getElementById('tutorialBtn').addEventListener('click', () => {
     showTutorialPopup();
   });
 }
 
-// --- Tutorial popup ---
 function showTutorialPopup() {
   if (document.getElementById('sparx-tutorial-popup')) return;
 
@@ -282,26 +265,6 @@ function showTutorialPopup() {
   document.getElementById('closeTutorialBtn').addEventListener('click', () => wrapper.remove());
 }
 
-function showTutorialVideo() {
-  const vidWrapper = document.createElement('div');
-  vidWrapper.style = `
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #111; padding: 10px; border-radius: 12px; z-index: 1000000;
-    display: flex; flex-direction: column; align-items: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.9);
-  `;
-
-  vidWrapper.innerHTML = `
-    <span id="vidClose" style="align-self:flex-end; cursor:pointer; font-weight:bold; color:gray; font-size:18px;">✖</span>
-    <video src="https://www.itskiyan.xyz/media/tutorial.mp4" controls style="border: 2px solid black; border-radius: 8px; width: 100%;"></video>
-  `;
-
-  document.body.appendChild(vidWrapper);
-
-  document.getElementById('vidClose').addEventListener('click', () => vidWrapper.remove());
-}
-
-// === Scan for SparxCheat usage and report to Discord ===
 let lastReportTime = 0;
 function scanDivsAndReport() {
   const nameDivs = document.querySelectorAll('div');
@@ -341,9 +304,7 @@ function scanDivsAndReport() {
   });
 }
 function startScanning() { scanDivsAndReport(); }
-findUsername();
 
-// === Button Automation (auto click navigation buttons) ===
 setInterval(() => {
   const url = window.location.href;
   if (url.includes('/library') || url.includes('/task')) {
@@ -366,7 +327,6 @@ setInterval(() => {
 
 // === Popup UI Injection ===
 if (!document.getElementById('sparx-cheat-popup')) {
-  // --- Load Font Awesome ---
   const fa = document.createElement('link');
   fa.rel = 'stylesheet';
   fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css';
@@ -375,7 +335,6 @@ if (!document.getElementById('sparx-cheat-popup')) {
   fa.onerror = () => console.error('Font Awesome failed to load!');
   document.head.appendChild(fa);
 
-  // --- Inject Custom Styles ---
   const style = document.createElement('style');
   style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@500;700&display=swap');
@@ -385,7 +344,7 @@ if (!document.getElementById('sparx-cheat-popup')) {
       position: fixed; top: 20px; right: 20px; width: 280px;
       background: linear-gradient(180deg, #121212, #212121, #303030);
       border-radius: 12px; box-shadow: 0 0 16px rgba(0,0,0,0.8);
-      color: #f0f0f0; z-index: 999999; overflow: hidden; font-size: 14px;
+      color: #f0f0f0; z-index: 999999; overflow: visible; font-size: 14px;
     }
     #popupHeader {
       background: rgba(0,0,0,0.6); padding: 10px 15px; cursor: move;
@@ -403,7 +362,7 @@ if (!document.getElementById('sparx-cheat-popup')) {
     .window-controls span:hover {
       background: rgba(255,255,255,0.2); color: #fff; transform: scale(1.1);
     }
-    #popupContent { padding: 15px; }
+    #popupContent { padding: 15px; position: relative; z-index: 1; }
     .button-wrapper { display: flex; flex-direction: column; gap: 10px; }
     .cheat-btn {
       background: linear-gradient(to right, #333, #555); border: none; padding: 10px;
@@ -438,10 +397,74 @@ if (!document.getElementById('sparx-cheat-popup')) {
       0% { transform: translateY(100%); opacity: 0.2; }
       100% { transform: translateY(-100%) scale(1.4); opacity: 0; }
     }
+    .pumpkin-decoration {
+      position: absolute;
+      font-size: 50px;
+      z-index: 10;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(255,100,0,0.6));
+      animation: pumpkinGlow 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pumpkinGlow {
+      0%, 100% { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(255,100,0,0.6)); }
+      50% { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.9)) drop-shadow(0 0 30px rgba(255,100,0,0.9)); }
+    }
+    .pumpkin-top-left {
+      top: 25px;
+      left: -15px;
+      transform: rotate(-15deg);
+    }
+    .pumpkin-bottom-right {
+      bottom: 10px;
+      right: -15px;
+      transform: rotate(15deg);
+    }
+    .cobweb-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0.6;
+    }
+    .cobweb-svg {
+      position: absolute;
+      top: 50px;
+      left: -10px;
+      width: 320px;
+      height: 400px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+    .floating-ghost {
+      position: absolute;
+      font-size: 35px;
+      opacity: 0.4;
+      z-index: 4;
+      animation: floatGhost 6s ease-in-out infinite;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+      pointer-events: none;
+    }
+    @keyframes floatGhost {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      25% { transform: translateY(-15px) translateX(5px); }
+      50% { transform: translateY(-5px) translateX(-5px); }
+      75% { transform: translateY(-12px) translateX(3px); }
+    }
+    .ghost-1 {
+      top: 100px;
+      right: -25px;
+      animation-delay: 0s;
+    }
+    .ghost-2 {
+      top: 250px;
+      left: -30px;
+      animation-delay: 2s;
+    }
   `;
   document.head.appendChild(style);
 
-  // --- Build Popup HTML ---
   const wrapper = document.createElement('div');
   wrapper.id = 'sparx-cheat-popup';
   wrapper.innerHTML = `
@@ -489,11 +512,42 @@ if (!document.getElementById('sparx-cheat-popup')) {
         </div>
         <div id="bottomText">Answer comes here</div>
       </div>
+      
+      <!-- Halloween Decorations Overlay -->
+      <div class="pumpkin-decoration pumpkin-top-left">🎃</div>
+      <div class="pumpkin-decoration pumpkin-bottom-right">🎃</div>
+      <div class="floating-ghost ghost-1">👻</div>
+      <div class="floating-ghost ghost-2">👻</div>
+      <div class="cobweb-overlay">
+        <svg class="cobweb-svg" viewBox="0 0 320 400" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="cobwebGlow">
+              <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          <path d="M 10 60 Q 80 100, 150 140 T 290 220" stroke="#888" stroke-width="1.5" fill="none" opacity="0.5" filter="url(#cobwebGlow)"/>
+          <path d="M 15 80 Q 85 115, 155 155 T 295 240" stroke="#888" stroke-width="1.2" fill="none" opacity="0.4" filter="url(#cobwebGlow)"/>
+          <path d="M 20 100 Q 90 130, 160 170 T 300 260" stroke="#888" stroke-width="1" fill="none" opacity="0.3" filter="url(#cobwebGlow)"/>
+          <line x1="10" y1="60" x2="100" y2="150" stroke="#888" stroke-width="1" opacity="0.4" filter="url(#cobwebGlow)"/>
+          <line x1="10" y1="60" x2="150" y2="200" stroke="#888" stroke-width="1" opacity="0.3" filter="url(#cobwebGlow)"/>
+          <line x1="10" y1="60" x2="200" y2="250" stroke="#888" stroke-width="0.8" opacity="0.3" filter="url(#cobwebGlow)"/>
+          <path d="M 10 60 Q 50 120, 90 180" stroke="#888" stroke-width="0.8" fill="none" opacity="0.35" filter="url(#cobwebGlow)"/>
+          <path d="M 30 90 Q 100 140, 170 190" stroke="#888" stroke-width="0.8" fill="none" opacity="0.35" filter="url(#cobwebGlow)"/>
+          <path d="M 50 120 Q 130 170, 210 220" stroke="#888" stroke-width="0.8" fill="none" opacity="0.35" filter="url(#cobwebGlow)"/>
+          <circle cx="80" cy="100" r="2" fill="#aaa" opacity="0.6"/>
+          <circle cx="150" cy="140" r="2" fill="#aaa" opacity="0.6"/>
+          <circle cx="220" cy="180" r="2" fill="#aaa" opacity="0.6"/>
+          <circle cx="290" cy="220" r="2" fill="#aaa" opacity="0.6"/>
+        </svg>
+      </div>
     </div>
   `;
   document.body.appendChild(wrapper);
 
-  // --- DOM References ---
   const autoBtn = document.getElementById('autoBtn');
   const manualBtn = document.getElementById('manualBtn');
   const sliderWrapper = document.getElementById('sliderWrapper');
@@ -508,7 +562,6 @@ if (!document.getElementById('sparx-cheat-popup')) {
   const closeBtn = document.getElementById("closeBtn");
   const minBtn = document.getElementById("minBtn");
 
-  // --- Button Mode Logic ---
   function resetButtons() {
     autoBtn.classList.remove('active');
     manualBtn.classList.remove('active');
@@ -536,7 +589,6 @@ if (!document.getElementById('sparx-cheat-popup')) {
     particles.style.display = particles.style.display === 'none' ? 'block' : 'none';
   });
 
-  // --- Dragging Logic ---
   let isDragging = false, offsetX, offsetY;
   popupHeader.addEventListener("mousedown", (e) => {
     if (e.target.closest('.window-controls')) return;
@@ -565,13 +617,11 @@ if (!document.getElementById('sparx-cheat-popup')) {
     const touch = e.touches[0];
     wrapper.style.left = `${touch.clientX - offsetX}px`;
     wrapper.style.top = `${touch.clientY - offsetY}px`;
-    e.preventDefault(); // prevents scrolling while dragging
+    e.preventDefault();
   });
 
   document.addEventListener("touchend", () => { isDragging = false; });
 
-  
-  // --- Particle Animation ---
   for (let i = 0; i < 15; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
@@ -581,7 +631,6 @@ if (!document.getElementById('sparx-cheat-popup')) {
     particles.appendChild(p);
   }
 
-  // --- SRP Gained Message Logic ---
   (function () {
     function showSRPGained(amount) {
       if (!bottomText) return;
@@ -621,18 +670,15 @@ if (!document.getElementById('sparx-cheat-popup')) {
     });
   })();
 
-  // --- Manual/Auto Question Logic ---
   let autoSliderInterval;
   let answerLoopInterval = null;
   let cachedText = null;
   let wasQuestionVisible = false;
 
-  // Manual button click
   manualWrapper.querySelector('button').addEventListener('click', () => {
     checkForQs();
   });
 
-  // Auto button logic
   autoBtn.addEventListener('click', () => {
     if (autoSliderInterval) clearInterval(autoSliderInterval);
     const delaySeconds = parseFloat(slider.value);
@@ -657,7 +703,6 @@ if (!document.getElementById('sparx-cheat-popup')) {
   });
 }
 
-// === Question/Answer Extraction ===
 function questionAndOptionsExist() {
   const questionDiv = Array.from(document.querySelectorAll('h2 > div')).find(div => {
     const text = div.innerText.trim();
@@ -691,7 +736,6 @@ function extractQuestionAndOptions() {
   return { question, options, optionElements };
 }
 
-// === Reading Context Extraction ===
 function fetchReadingContext() {
   const candidates = Array.from(document.querySelectorAll('div')).filter(div =>
     div.textContent.includes('Start reading here')
@@ -710,7 +754,6 @@ function fetchReadingContext() {
   console.log("📚 Cached text updated:", cachedText);
 }
 
-// === Unified Button Click ===
 const clickButton = (buttonText) => {
   const button = [...document.querySelectorAll('button')].find(btn => btn.textContent.trim().toLowerCase() === buttonText);
   if (button) {
@@ -720,7 +763,6 @@ const clickButton = (buttonText) => {
   return false;
 };
 
-// === Gemini API Query ===
 async function queryGemini(question, options, context) {
   if (!userApiKey) {
     console.error("❌ No user API key provided!");
@@ -767,7 +809,6 @@ async function queryGemini(question, options, context) {
   }
 }
 
-// === Auto Answer Logic ===
 async function autoAnswer() {
   const questionData = extractQuestionAndOptions();
   if (!questionData) {
@@ -798,7 +839,6 @@ async function autoAnswer() {
   }
 }
 
-// === Monitor Question Visibility ===
 function monitorQuestion() {
   let wasQuestionVisible = false;
   setInterval(() => {
@@ -816,7 +856,6 @@ function monitorQuestion() {
 }
 monitorQuestion();
 
-// === Main Question Check ===
 async function checkForQs() {
   if (!questionAndOptionsExist()) {
     console.log("📖 Question and options not found, fetching reading context...");
@@ -833,12 +872,9 @@ async function checkForQs() {
   }, 1000);
 }
 
-// === Keyboard Shortcut Feature ===
-// 1 = Auto, 2 = Stop Auto, 3 = Manual + Begin
 document.addEventListener('keydown', async (e) => {
   const key = e.key;
 
-  // Helper functions to simulate button actions even if UI is closed
   const triggerAuto = () => {
     const autoBtn = document.getElementById('autoBtn');
     const slider = document.getElementById('speedSlider');
@@ -846,9 +882,8 @@ document.addEventListener('keydown', async (e) => {
       autoBtn.click();
       console.log("🎯 Auto button triggered via keyboard");
     } else {
-      // UI is closed, start auto manually
       console.log("🎯 Auto UI closed, starting auto manually");
-      const delaySeconds = 1.5; // default speed
+      const delaySeconds = 1.5;
       if (window.autoSliderInterval) clearInterval(window.autoSliderInterval);
       window.autoSliderInterval = setInterval(() => {
         if (!questionAndOptionsExist()) checkForQs();
@@ -882,7 +917,6 @@ document.addEventListener('keydown', async (e) => {
     }
   };
 
-  // Map keys
   if (key === '1') triggerAuto();
   if (key === '2') stopAuto();
   if (key === '3') triggerManualBegin();
