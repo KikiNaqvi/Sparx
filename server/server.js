@@ -77,14 +77,15 @@ app.post("/api/setevent", (req, res) => {
 
   console.log(`🎉 Event set: ${event} ${url ? `(image: ${url})` : ""}`);
 
-  // Auto-disable timing logic
-  const duration = event === "custom-image" ? 5000 : 60000;
-  setTimeout(() => {
-    if (events[event]) {
-      events[event].enabled = false;
-      console.log(`⏱️ Event automatically disabled: ${event}`);
-    }
-  }, duration);
+  const duration = event === "custom-image" ? 5000 : event === "countdown" ? null : 60000;
+  if (duration) {
+    setTimeout(() => {
+      if (events[event]) {
+        events[event].enabled = false;
+        console.log(`⏱️ Event automatically disabled: ${event}`);
+      }
+    }, duration);
+  }
 
   res.json({ status: "ok", event: events[event] });
 });
@@ -156,27 +157,6 @@ app.get("/api/testMongo", async (req, res) => {
     res.status(500).json({ error: "MongoDB not connected" });
   }
 });
-
-// ====== Image Upload Handling ======
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "uploads"));
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, unique + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage });
-
-app.post("/api/upload-image", upload.single("image"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-  const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-  console.log("📸 Image uploaded:", imageUrl);
-  res.json({ url: imageUrl });
-});
-
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ====== Boot ======
 const PORT = process.env.PORT || 3000;
