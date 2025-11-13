@@ -1,1 +1,586 @@
-nothing here...
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SparxCheat</title>
+  <link rel="icon" type="image/png" href="https://www.itskiyan.xyz/icon.png" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7273873383773403"
+     crossorigin="anonymous"></script>
+  <style>
+  /* ----- Background & Base ----- */
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="2" fill="white" fill-opacity="0.15"/></svg>') repeat;
+    color: #eee;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    overflow-x: hidden;
+  }
+
+  /* ----- Header & Tabs ----- */
+  header {
+    display: flex;
+    align-items: center;
+    background: #1f1f1fdd;
+    backdrop-filter: saturate(180%) blur(10px);
+    padding: 15px 30px;
+    gap: 30px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.7);
+  }
+
+  header img.logo {
+    height: 48px;
+    width: 48px;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+  }
+  header img.logo:hover {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  nav {
+    display: flex;
+    gap: 32px;
+    flex-grow: 1;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ccc;
+    padding: 10px 20px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.35s ease;
+    position: relative;
+  }
+
+  nav button:hover {
+    color: #fff;
+    filter: drop-shadow(0 0 10px #39f);
+  }
+
+  nav button.active {
+    color: #fff;
+    filter: drop-shadow(0 0 14px #4de);
+  }
+
+  /* Color coding for tabs */
+  nav button#tab-maths.active {
+    color: #3fa9f5;
+    text-shadow: 0 0 6px #3fa9f5aa;
+  }
+  nav button#tab-reader.active {
+    color: #a56cff;
+    text-shadow: 0 0 8px #a56cffcc;
+  }
+  nav button#tab-kahoot.active {
+    color: #b168ff;
+    text-shadow: 0 0 8px #b168ffcc;
+  }
+  nav button#tab-signin.active {
+    color: #fff;
+    text-shadow: 0 0 6px #fff;
+  }
+
+  /* ----- Main Content Area ----- */
+  main {
+    flex-grow: 1;
+    padding: 30px 40px;
+    overflow-y: auto;
+  }
+
+  section {
+    display: none;
+    animation: fadeIn 1s ease forwards;
+  }
+  section.active {
+    display: block;
+  }
+
+  /* ----- Animations ----- */
+  @keyframes fadeIn {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+
+  /* ----- Section specific styling ----- */
+
+  /* Maths Tab */
+  #maths {
+    border-left: 6px solid #3fa9f5;
+    padding-left: 25px;
+  }
+  #maths h1 {
+    font-size: 3.4rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px #3fa9f5aa;
+  }
+  #maths p {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+  }
+  #maths .info-block {
+    background: #2a2a2acc;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 0 20px #3fa9f5bb inset;
+    position: relative;
+  }
+  #maths .info-block:hover {
+    box-shadow: 0 0 40px #3fa9f5dd inset;
+  }
+  #maths img.sticker {
+    width: 120px;
+    animation: floatUpDown 4s ease-in-out infinite;
+  }
+
+  /* Reader Tab */
+  #reader {
+    border-left: 6px solid #a56cff;
+    padding-left: 25px;
+  }
+  #reader h1 {
+    font-size: 3.4rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px #a56cffcc;
+  }
+  #reader p {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+  }
+  #reader .info-block {
+    background: #2a2a2acc;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 0 20px #a56cffbb inset;
+    position: relative;
+  }
+  #reader .info-block:hover {
+    box-shadow: 0 0 40px #a56cffdd inset;
+  }
+  #reader img.sticker {
+    width: 120px;
+    animation: floatSideToSide 5s ease-in-out infinite;
+  }
+
+  /* Kahoot Tab */
+  #kahoot {
+    border-left: 6px solid #b168ff;
+    padding-left: 25px;
+  }
+  #kahoot h1 {
+    font-size: 3.4rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px #b168ffcc;
+  }
+  #kahoot p {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+  }
+  #kahoot .info-block {
+    background: #2a2a2acc;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 0 20px #b168ffbb inset;
+    position: relative;
+  }
+  #kahoot .info-block:hover {
+    box-shadow: 0 0 40px #b168ffdd inset;
+  }
+  #kahoot img.sticker {
+    width: 120px;
+    animation: floatBounce 4s ease-in-out infinite;
+  }
+
+  /* Sign In Tab */
+  #signin {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding-left: 25px;
+  flex-direction: column;
+  }
+  #signin.active {
+    display: flex;
+  }
+  #signin h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #ccc;
+  }
+  #signin form {
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  #signin label {
+    font-size: 1.3rem;
+    color: #999;
+  }
+  #signin input {
+    padding: 12px 15px;
+    font-size: 1.2rem;
+    border-radius: 12px;
+    border: 1.5px solid #444;
+    background: #222;
+    color: #eee;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  #signin input:focus {
+    border-color: #39f;
+    box-shadow: 0 0 10px #39f8;
+  }
+  #signin button {
+    padding: 15px;
+    font-size: 1.4rem;
+    border: none;
+    border-radius: 18px;
+    background: #39f;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.4s ease;
+  }
+  #signin button:hover {
+    background: #0055ff;
+    box-shadow: 0 0 18px #39f;
+  }
+
+  /* ----- Animations for stickers ----- */
+  @keyframes floatUpDown {
+    0%, 100% { transform: translateY(0);}
+    50% { transform: translateY(-20px);}
+  }
+  @keyframes floatSideToSide {
+    0%, 100% { transform: translateX(0);}
+    50% { transform: translateX(20px);}
+  }
+  @keyframes floatBounce {
+    0%, 100% { transform: translateY(0);}
+    25% { transform: translateY(-15px);}
+    50% { transform: translateY(0);}
+    75% { transform: translateY(-10px);}
+  }
+
+  /* ----- Footer ----- */
+  footer {
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 14px;
+    color: #555;
+  }
+
+  /* ----- Scrollbar styling ----- */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #121212;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3fa9f5aa;
+    border-radius: 20px;
+    border: 3px solid #121212;
+  }
+</style>
+</head>
+<body>
+  <header>
+  <img class="logo" src="https://kikinaqvi.github.io/Sparx/icon.png" alt="Sparx Logo" title="Sparx Cheat Hub" style="height: 60px; width: 60px;" />
+  <nav style="justify-content: center;">
+    <button id="tab-maths" class="active" aria-label="Sparx Maths">➗ Sparx Maths</button>
+    <button id="tab-reader" aria-label="Sparx Reader">📖 Sparx Reader</button>
+    <button id="tab-kahoot" aria-label="Kahoot">🎯 Kahoot</button>
+    <button id="tab-signin" aria-label="Sign In">🔐 Sign In</button>
+  </nav>
+</header>
+
+<main>
+  <!-- Sparx Maths -->
+  <section id="maths" class="active" aria-label="Sparx Maths Section">
+    <h1>➗ Sparx Maths Cheats</h1>
+    <p>Welcome to <strong>Sparx Cheat Hub</strong> — the ultimate cheat extension for your Sparx Maths assignments! 💙✨</p>
+
+    <div class="info-block">
+      <h2>How it works 🔍</h2>
+      <p>The extension reads your Sparx Maths questions, automates answering using smart algorithms, and lets you breeze through homework faster than ever!</p>
+      <img src="https://sparxext.com/assets/services/sparxmaths.jpg" alt="Math magic" class="sticker" style="border-radius: 18px; overflow: hidden;" />
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7273873383773403"
+     crossorigin="anonymous"></script>
+<!-- ad1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-7273873383773403"
+     data-ad-slot="7025894846"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    </div>
+
+    <div class="info-block">
+      <h2>Features ⚡️</h2>
+      <ul>
+        <li>💡 Automatic question detection & answer clicking</li>
+        <li>🚀 Fast, reliable API integration</li>
+        <li>🧠 Smart answer suggestions with AI assistance</li>
+        <li>🎨 Beautiful & animated UI</li>
+        <li>🛡️ Anti-detection techniques</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h2>Get started 💻</h2>
+      <p>Install the extension, open your Sparx Maths page, and watch the magic happen! No stress, just results.</p>
+      <img src="https://www.itskiyan.xyz/icon.png" alt="Coding magic" class="sticker" />
+    </div>
+  </section>
+
+  <!-- Sparx Reader -->
+  <section id="reader" aria-label="Sparx Reader Section">
+    <h1>📖 Sparx Reader Cheats</h1>
+    <p>Reading made easy and fun! Our extension turns Sparx Reader tasks into smooth sailing. 💜✨</p>
+
+    <div class="info-block">
+      <h2>How it works 🔍</h2>
+      <p>Detects reading passages, highlights answers, and auto-fills questions so you finish faster and smarter.</p>
+      <img src="https://sparxext.com/assets/services/sparxreader.jpg" alt="Reading magic" class="sticker" style="border-radius: 18px; overflow: hidden;" />
+    </div>
+
+    <div class="info-block">
+      <h2>Features ⚡️</h2>
+      <ul>
+        <li>📚 Auto-detects text & questions</li>
+        <li>✨ Smart answer autofill</li>
+        <li>🖌️ Beautiful UI with animations</li>
+        <li>🔒 Privacy-first design</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h2>Get started 💻</h2>
+      <p>Simply install, open Sparx Reader, and watch the extension work its charm!</p>
+      <img src="https://www.itskiyan.xyz/icon.png" alt="Reader magic" class="sticker" />
+    </div>
+  </section>
+
+  <!-- Kahoot -->
+  <section id="kahoot" aria-label="Kahoot Section">
+    <h1>🎯 Kahoot Cheats</h1>
+    <p>Score big with our Kahoot cheat extension! No more frantic guessing — just smart play. 💜⚡️</p>
+
+    <div class="info-block">
+      <h2>How it works 🔍</h2>
+      <p>Detects Kahoot questions and auto-selects the best answers in real-time with our fast algorithm.</p>
+      <img src="https://sparxext.com/assets/services/kahoot.webp" alt="Reading magic" class="sticker" style="border-radius: 18px; overflow: hidden;" />
+    </div>
+
+    <div class="info-block">
+      <h2>Features ⚡️</h2>
+      <ul>
+        <li>🎮 Real-time answer detection</li>
+        <li>🕹️ Fast response & auto-clicking</li>
+        <li>📈 Stats tracking & score boosting</li>
+        <li>💜 Smooth, animated UI</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h2>Get started 💻</h2>
+      <p>Install the extension and open Kahoot — the extension will handle the rest.</p>
+      <img src="https://www.itskiyan.xyz/icon.png" alt="Game magic" class="sticker" />
+    </div>
+  </section>
+
+  <!-- Sign In Section -->
+<section id="signin" aria-label="Sign In Section">
+  <div style="text-align: center; width: 100%; max-width: 500px;">
+    <h1 style="font-size: 3.5rem; color: #ccc; margin-bottom: 20px;">
+      🔐 <span id="auth-title" style="white-space: nowrap;">Sign In</span>
+    </h1>
+    <form id="auth-form" style="margin: 0 auto; display: flex; flex-direction: column; gap: 20px; align-items: stretch;">
+      <!-- Username (Only visible during sign-up) -->
+      <div id="username-field" style="display: none; flex-direction: column; align-items: stretch; gap: 20px;">
+        <label for="username" style="font-size: 1.3rem; color: #999; text-align: left;">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Your username"
+          style="padding: 15px; font-size: 1.4rem; border-radius: 12px; border: 1.5px solid #444; background: #222; color: #eee; outline: none; transition: border-color 0.3s ease;"
+        />
+      </div>
+
+      <label for="email" style="font-size: 1.3rem; color: #999; text-align: left;">Email address</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="you@example.com"
+        required
+        style="padding: 15px; font-size: 1.4rem; border-radius: 12px; border: 1.5px solid #444; background: #222; color: #eee; outline: none; transition: border-color 0.3s ease;"
+      />
+
+      <label for="password" style="font-size: 1.3rem; color: #999; text-align: left;">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="••••••••"
+        required
+        style="padding: 15px; font-size: 1.4rem; border-radius: 12px; border: 1.5px solid #444; background: #222; color: #eee; outline: none; transition: border-color 0.3s ease;"
+      />
+
+      <button
+        type="submit"
+        style="padding: 18px; font-size: 1.6rem; border: none; border-radius: 18px; background: #39f; color: white; font-weight: 700; cursor: pointer; transition: background-color 0.4s ease;"
+      >
+        Sign In
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 10px;">
+      <button
+        id="toggle-auth"
+        type="button"
+        style="background:none; border:none; color:#39f; cursor:pointer; font-size:1rem;"
+      >
+        Create an account
+      </button>
+    </div>
+  </div>
+</section>
+
+
+</main>
+
+<footer>
+  <small>© 2025 SparxCheat • Made with love by someone ❤️</small>
+</footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+    // ————— Firebase Config —————
+    const firebaseConfig = {
+      apiKey: "AIzaSyAS-98Bz91JuQAtuOl_qsyPc7Jp1tuowOw",
+      authDomain: "hip-fuze-305914.firebaseapp.com",
+      projectId: "hip-fuze-305914",
+      storageBucket: "hip-fuze-305914.firebasestorage.app",
+      messagingSenderId: "454217699115",
+      appId: "1:454217699115:web:dbd50f2e564cf0e711ff6e",
+      measurementId: "G-R2VVQ168SP"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // ————— Cache Helpers —————
+    const CACHE_KEY = 'sparxLoggedIn';
+    function setCache(flag) {
+      localStorage.setItem(CACHE_KEY, flag ? 'true' : 'false');
+    }
+    function isCached() {
+      return localStorage.getItem(CACHE_KEY) === 'true';
+    }
+
+    // ————— On Load: auto‑redirect if already signed in —————
+    window.addEventListener('load', () => {
+      if (isCached() && auth.currentUser) {
+        // you’re still signed in — skip straight to dashboard
+        window.location.href = 'dashboard';
+      }
+    });
+
+    // Tab functionality
+  const tabs = document.querySelectorAll('nav button');
+  const sections = document.querySelectorAll('main section');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Remove active classes
+      tabs.forEach(t => t.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+
+      // Activate clicked tab & corresponding section
+      tab.classList.add('active');
+      const id = tab.id.replace('tab-', '');
+      document.getElementById(id).classList.add('active');
+    });
+  });
+
+    const authForm      = document.getElementById('auth-form');
+    const toggleAuthBtn = document.getElementById('toggle-auth');
+    const usernameField = document.getElementById('username-field');
+    const authTitle     = document.getElementById('auth-title');
+    let isSignIn        = true;
+
+    toggleAuthBtn.addEventListener('click', () => {
+      isSignIn = !isSignIn;
+      if (isSignIn) {
+        authForm.querySelector('button[type="submit"]').textContent = 'Sign In';
+        toggleAuthBtn.textContent = 'Create an account';
+        usernameField.style.display = 'none';
+        authTitle.textContent = 'Sign In';
+      } else {
+        authForm.querySelector('button[type="submit"]').textContent = 'Create Account';
+        toggleAuthBtn.textContent = 'Already have an account? Sign In';
+        usernameField.style.display = 'flex';
+        authTitle.textContent = 'Create Account';
+      }
+    });
+
+    authForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const email    = authForm.email.value;
+      const password = authForm.password.value;
+      const username = authForm.username.value;
+
+      if (isSignIn) {
+        auth.signInWithEmailAndPassword(email, password)
+          .then(({ user }) => {
+            setCache(true);               // ← cache login
+            window.location.href = 'dashboard';
+          })
+          .catch(err => alert(`Error: ${err.message}`));
+      } else {
+        auth.createUserWithEmailAndPassword(email, password)
+          .then(({ user }) => {
+            if (username) user.updateProfile({ displayName: username });
+            return user.sendEmailVerification();
+          })
+          .then(() => {
+            alert(`Account created! Verification email sent. Please verify.`);
+            authForm.reset();
+            toggleAuthBtn.click();
+          })
+          .catch(err => alert(`Error: ${err.message}`));
+      }
+    });
+
+    // ————— Also clear cache on Firebase sign‑out (in case someone signs out elsewhere) —————
+    auth.onAuthStateChanged(user => {
+      if (!user) setCache(false);
+    });
+  </script>
+</body>
+</html>
