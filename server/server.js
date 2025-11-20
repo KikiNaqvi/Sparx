@@ -16,10 +16,12 @@ mongoose
 // ====== Mongoose Schema ======
 const userKeySchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  key: { type: String, required: true },
+  keys: {
+    type: [String],
+    default: [null, null, null, null, null]   // 5 slots
+  },
   createdAt: { type: Date, default: Date.now },
 });
-const UserKey = mongoose.model("UserKey", userKeySchema);
 
 // ====== Message System ======
 let latestMessage = "";
@@ -120,13 +122,33 @@ app.post("/api/draw/clear", (req, res) => {
 
 // ====== 🔑 User API Key System (MongoDB) ======
 app.post("/api/saveKey", async (req, res) => {
-  const { username, key } = req.body;
-  if (!username || !key) return res.status(400).json({ error: "Missing username or key" });
+  const { username, key, index } = req.body;
+
+  if (!username || !key || index === undefined) {
+    return res.status(400).json({ error: "Missing username, key or index" });
+  }
+
+  if (index < 0 || index > 4) {
+    return res.status(400).json({ error: "Invalid index (must be 0-4)" });
+  }
 
   try {
-    await UserKey.findOneAndUpdate({ username }, { key }, { upsert: true });
-    console.log(`🔑 Saved key for ${username}`);
-    res.json({ status: "ok", saved: true });
+    let user = await UserKey.findOne({ username });
+
+    if (!user) {
+      user = new UserKey({
+        username,
+        keys: [null, null, null, null, null]
+      });
+    }
+
+    user.keys[index] = key;
+    await user.save();
+
+    console.log(`🔑 Saved key #${index + 1} for ${username}`);
+
+    res.json({ status: "ok", saved: true, keys: user.keys });
+
   } catch (err) {
     console.error("❌ Error saving key:", err);
     res.status(500).json({ error: "Database error" });
@@ -139,7 +161,12 @@ app.get("/api/checkKey", async (req, res) => {
 
   try {
     const found = await UserKey.findOne({ username });
-    res.json({ hasKey: !!found, apiKey: found?.key || null });
+
+    res.json({
+      hasKey: !!found,
+      keys: found?.keys || [null, null, null, null, null]
+    });
+
   } catch (err) {
     console.error("❌ Error checking key:", err);
     res.status(500).json({ error: "Database error" });
