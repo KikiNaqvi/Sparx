@@ -13,15 +13,16 @@ mongoose
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection failed:", err));
 
-// ====== Mongoose Schema ======
+// ====== Mongoose Schema & Model ======
 const userKeySchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   keys: {
     type: [String],
-    default: [null, null, null, null, null]   // 5 slots
+    default: [null, null, null, null, null], // 5 slots
   },
   createdAt: { type: Date, default: Date.now },
 });
+const UserKey = mongoose.model("UserKey", userKeySchema);
 
 // ====== Message System ======
 let latestMessage = "";
@@ -43,26 +44,6 @@ app.get("/msg/latest", (req, res) => {
 
 // ====== Event System ======
 let events = {};
-
-function setEventAutoDisable(eventName, time = null) {
-  events[eventName] = {
-    enabled: true,
-    time: time,
-    updated: Date.now(),
-  };
-
-  console.log(`🎉 Event set: ${eventName} ${time ? `(time: ${time})` : ""}`);
-
-  if (eventName !== "countdown") {
-    setTimeout(() => {
-      const duration = eventName === "custom-image" ? 5000 : 60000;
-      if (events[eventName]) {
-        events[eventName].enabled = false;
-        console.log(`⏱️ Event automatically disabled: ${eventName}`);
-      }
-    }, 60000);
-  }
-}
 
 app.post("/api/setevent", (req, res) => {
   const { event, time, url } = req.body;
@@ -90,9 +71,7 @@ app.post("/api/setevent", (req, res) => {
   res.json({ status: "ok", event: events[event] });
 });
 
-app.get("/api/events", (req, res) => {
-  res.json(events);
-});
+app.get("/api/events", (req, res) => res.json(events));
 
 app.post("/api/clearevents", (req, res) => {
   events = {};
@@ -124,31 +103,24 @@ app.post("/api/draw/clear", (req, res) => {
 app.post("/api/saveKey", async (req, res) => {
   const { username, key, index } = req.body;
 
-  if (!username || !key || index === undefined) {
+  if (!username || !key || index === undefined)
     return res.status(400).json({ error: "Missing username, key or index" });
-  }
 
-  if (index < 0 || index > 4) {
+  if (index < 0 || index > 4)
     return res.status(400).json({ error: "Invalid index (must be 0-4)" });
-  }
 
   try {
     let user = await UserKey.findOne({ username });
 
     if (!user) {
-      user = new UserKey({
-        username,
-        keys: [null, null, null, null, null]
-      });
+      user = new UserKey({ username, keys: [null, null, null, null, null] });
     }
 
     user.keys[index] = key;
     await user.save();
 
     console.log(`🔑 Saved key #${index + 1} for ${username}`);
-
     res.json({ status: "ok", saved: true, keys: user.keys });
-
   } catch (err) {
     console.error("❌ Error saving key:", err);
     res.status(500).json({ error: "Database error" });
@@ -160,13 +132,11 @@ app.get("/api/checkKey", async (req, res) => {
   if (!username) return res.status(400).json({ error: "Username missing" });
 
   try {
-    const found = await UserKey.findOne({ username });
-
+    const user = await UserKey.findOne({ username });
     res.json({
-      hasKey: !!found,
-      keys: found?.keys || [null, null, null, null, null]
+      hasKey: !!user,
+      keys: user?.keys || [null, null, null, null, null],
     });
-
   } catch (err) {
     console.error("❌ Error checking key:", err);
     res.status(500).json({ error: "Database error" });
