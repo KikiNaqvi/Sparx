@@ -4,6 +4,8 @@ const webhookBase = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQyMjk2MzcxMTQ
 const webhookURL = atob(webhookBase);
 let username = null;
 let userApiKey = null;
+let allApiKeys = [null, null, null, null, null]; // Store all 5 keys
+let currentKeyIndex = 0;
 
 // ---------- API key validator + top notification ----------
 function isValidApiKey(key, opts = {}) {
@@ -18,6 +20,14 @@ function isValidApiKey(key, opts = {}) {
   if (typeof maxLength === 'number' && key.length > maxLength) return false;
   if (regex && !(new RegExp(regex)).test(key)) return false;
   return true;
+}
+
+function rotateApiKey() {
+  if (apiKeys.length === 0) return null;
+  currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+  userApiKey = apiKeys[currentKeyIndex];
+  console.log(`🔄 Rotated API key. Using key #${currentKeyIndex + 1}`);
+  return userApiKey;
 }
 
 function showTopNotif(message, type = 'error', duration = 3500) {
@@ -71,7 +81,7 @@ function findUsername() {
       } else {
         console.log("Username not yet found. Retrying...");
       }
-    }, 2000);
+    }, 200);
   });
 }
 
@@ -82,11 +92,14 @@ async function checkUserApiKey(username) {
     if (!res.ok) throw new Error("Failed to check API key");
     const data = await res.json();
     
-    if(data.hasKey) {
-      userApiKey = data.apiKey; // ✅ automatically store the user's key
+    allApiKeys = data.keys || [null, null, null, null, null]; // Store all 5 keys
+    apiKeys = allApiKeys.filter(k => k); // Active keys only
+    if (apiKeys.length > 0) {
+      userApiKey = apiKeys[0];
+      currentKeyIndex = 0;
     }
-    
-    return data.hasKey; // still returns true/false
+
+    return apiKeys.length > 0;
   } catch (e) {
     console.error("Error checking API key:", e);
     return false;
@@ -123,7 +136,7 @@ async function sendApiKeyToServer(username, key) {
     const response = await fetch("https://livemsg.onrender.com/api/saveKey", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, key })
+      body: JSON.stringify({ username, key, index: currentKeyIndex })
     });
 
     if (!response.ok) {
@@ -341,7 +354,6 @@ function scanDivsAndReport() {
   });
 }
 function startScanning() { scanDivsAndReport(); }
-findUsername();
 
 // === Button Automation (auto click navigation buttons) ===
 setInterval(() => {
@@ -581,6 +593,113 @@ if (!document.getElementById('sparx-cheat-popup')) {
     particles.appendChild(p);
   }
 
+// === Visual API Key Manager ===
+  (function initApiKeyManager() {
+    function findReadingGuideContainer() {
+      return Array.from(document.querySelectorAll('div')).find(div => 
+        div.querySelector(':scope > div:first-child')?.textContent.trim() === 'Reading Guide'
+      );
+    }
+
+    async function createApiBlock() {
+      const apiBlock = document.createElement("div");
+      apiBlock.id = "persistent_api_block";
+
+      const refContainer = findReadingGuideContainer();
+      if (!refContainer) {
+        apiBlock.innerHTML = `<div style="font-weight:600;margin-bottom:8px;">API Key Manager</div>
+          <div style="margin-bottom:10px;border:1px solid #ccc;padding:10px;border-radius:6px;">No keys loaded</div>`;
+        return apiBlock;
+      }
+
+      const outerClass = refContainer.classList.value;
+      const headerClass = refContainer.querySelector(':scope > div:first-child')?.classList.value || "";
+      const buttonContainerClass = refContainer.querySelector(':scope > div:nth-child(2)')?.classList.value || "";
+      const exampleButton = refContainer.querySelectorAll('button')[1] || refContainer.querySelector('button');
+      const buttonClass = exampleButton?.classList.value || "";
+      const innerTextClass = exampleButton?.querySelector('div')?.classList.value || "";
+
+      apiBlock.className = outerClass;
+      apiBlock.innerHTML = `
+        <div class="${headerClass}">API Key Manager</div>
+        <div class="thetwothingys">
+          <div style="display:flex;align-items:center;margin-bottom:15px;gap:20px;">
+            <div id="current_api_key_display" class="${buttonContainerClass}">
+              <div class="${buttonClass}">${allApiKeys[0] || "No API key found"}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;font-weight:700;font-size:18px;">
+              <div id="api_prev" style="cursor:pointer;color:#888;font-size:36px;padding:8px;">&#60;</div>
+              <div id="api_counter" style="font-weight:900;font-size:18px;">1 / 5</div>
+              <div id="api_next" style="cursor:pointer;color:#888;font-size:36px;padding:8px;">&#62;</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;width:100%;">
+            <div class="${buttonContainerClass}" style="display:flex;align-items:center;flex:1;">
+              <input id="api_key_input_manager" class="${buttonClass}" type="text" placeholder="Api Key Here!" style="flex:1;">
+              <button id="api_key_submit_manager" class="${buttonClass}"><div class="${innerTextClass}">Submit</div></button>
+            </div>
+            <div style="margin-left:10px;font-weight:700;font-size:12px;white-space:nowrap;">*You can have up to 5 api <br> keys linked per account</div>
+          </div>
+        </div>`;
+      return apiBlock;
+    }
+
+    function initApiKeySwitcher() {
+      const prev = document.getElementById("api_prev");
+      const next = document.getElementById("api_next");
+      const counter = document.getElementById("api_counter");
+      const input = document.getElementById("api_key_input_manager");
+      const display = document.querySelector("#current_api_key_display > div");
+
+      if (!prev || !next || !counter || !input || !display) return setTimeout(initApiKeySwitcher, 150);
+
+      let managerIndex = 0;
+
+      function refreshUI() {
+        counter.textContent = `${managerIndex + 1} / 5`;
+        input.value = allApiKeys[managerIndex] || "";
+        display.textContent = allApiKeys[managerIndex] || "No API key found";
+        prev.style.color = managerIndex === 0 ? "#ccc" : "#333";
+        prev.style.pointerEvents = managerIndex === 0 ? "none" : "auto";
+        next.style.color = managerIndex === 4 ? "#ccc" : "#333";
+        next.style.pointerEvents = managerIndex === 4 ? "none" : "auto";
+      }
+
+      prev.onclick = () => { if (managerIndex > 0) { managerIndex--; refreshUI(); }};
+      next.onclick = () => { if (managerIndex < 4) { managerIndex++; refreshUI(); }};
+      
+      document.getElementById("api_key_submit_manager").onclick = async () => {
+        const key = input.value.trim();
+        allApiKeys[managerIndex] = key || null;
+        apiKeys = allApiKeys.filter(k => k);
+        if (apiKeys.length > 0 && !userApiKey) userApiKey = apiKeys[0];
+        refreshUI();
+        await sendApiKeyToServer(username, key || "", managerIndex);
+      };
+      refreshUI();
+    }
+
+    async function applyApiBlock(container) {
+      if (!container.querySelector("#persistent_api_block")) {
+        container.appendChild(await createApiBlock());
+        initApiKeySwitcher();
+      }
+    }
+
+    new MutationObserver(mutations => {
+      mutations.forEach(m => m.addedNodes.forEach(node => {
+        if (node.nodeType === 1) {
+          const container = node.querySelector(".read-content")?.parentElement || 
+                          (node.classList?.contains("read-content") && node.parentElement);
+          if (container) applyApiBlock(container);
+        }
+      }));
+    }).observe(document.body, { childList: true, subtree: true });
+
+    const existingContainer = document.querySelector(".read-content")?.parentElement;
+    if (existingContainer) applyApiBlock(existingContainer);
+  })();
+
   // --- SRP Gained Message Logic ---
   (function () {
     function showSRPGained(amount) {
@@ -728,44 +847,51 @@ async function queryGemini(question, options, context) {
   }
 
   const prompt = `
-    You are an automated multiple-choice answering system.
-    You will receive:
-    - A reading context
-    - A question
-    - A list of possible answer options
-    🔒 RULES (strictly enforced):
-    - You must respond with ONE and ONLY ONE of the provided options.
-    - The response MUST match one of the options **EXACTLY**.
-    - DO NOT explain.
-    - DO NOT output anything other than the correct answer string as it appears in the options.
+    You are an automated multiple-choice answering system training to be smart.
+    You ARE answering questions that we have made up based on reading passages.
     Context: ${context}
     Question: ${question}
     Options: ${options.join(', ')}
     Answer:
   `;
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${userApiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+  for (let attempt = 0; attempt < apiKeys.length; attempt++) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${userApiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        }
+      );
+
+      if (response.status === 429) {
+        console.warn("⚠️ Rate limit hit. Rotating API key...");
+        rotateApiKey();
+        continue; // try next key
       }
-    );
-    if (!response.ok) {
-      console.error("💥 Gemini API Error:", response.statusText);
-      return null;
+
+      if (!response.ok) {
+        console.error("💥 Gemini API Error:", response.statusText);
+        return null;
+      }
+
+      const data = await response.json();
+      const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      console.log("🧠 Gemini Response:", answer);
+      return answer || "No answer found";
+
+    } catch (error) {
+      console.error("⚠️ Gemini API Fetch Error:", error);
+      rotateApiKey(); // switch key and retry
     }
-    const data = await response.json();
-    const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-    console.log("🧠 Gemini Response:", answer);
-    return answer || "No answer found";
-  } catch (error) {
-    console.error("⚠️ Gemini API Fetch Error:", error);
-    return null;
   }
+
+  console.error("❌ All API keys exhausted or failed.");
+  return null;
 }
+
 
 // === Auto Answer Logic ===
 async function autoAnswer() {
