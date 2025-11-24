@@ -117,7 +117,7 @@ findUsername().then(async () => {
   }
 });
 
-async function sendApiKeyToServer(username, key) {
+async function sendApiKeyToServer(username, key, keyIndex) {
   // Strict validator: must start with "AIza" and be exactly 39 chars
   const VALIDATOR = {
     prefixes: ['AIza'],
@@ -136,7 +136,7 @@ async function sendApiKeyToServer(username, key) {
     const response = await fetch("https://livemsg.onrender.com/api/saveKey", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, key, index: currentKeyIndex })
+      body: JSON.stringify({ username, key, index: keyIndex })
     });
 
     if (!response.ok) {
