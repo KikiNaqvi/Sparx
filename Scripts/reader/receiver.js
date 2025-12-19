@@ -3,6 +3,10 @@
   const EVENTS_API = "https://livemsg.onrender.com/api/events";
   const CHECK_INTERVAL = 500;
   const EVENT_CHECK_INTERVAL = 3000;
+  window.activeEvents = window.activeEvents || {};
+  window.lastExecutedScriptId = window.lastExecutedScriptId || null;
+  window.executedScripts = window.executedScripts || new Set();
+
 
   // state
   window.activeEvents = window.activeEvents || {};
@@ -745,7 +749,7 @@ function startBailao() {
   });
   document.body.appendChild(overlay);
 
-  bailaoAudio = new Audio("https://github.com/KikiNaqvi/Sparx/raw/main/media/MONTAGEM%20BAILÃO%20(Sped%20Up).mp3");
+  bailaoAudio = new Audio("https://github.com/KikiNaqvi/Sparx/raw/main/media/MontagemBailao.mp3");
   bailaoAudio.loop = true;
   bailaoAudio.volume = 0.7;
   bailaoAudio.play().catch(() => console.warn("bailao audio blocked"));
@@ -913,7 +917,6 @@ function stopCustomImage() {
   }, 400);
 }
 
-
   // ========== EVENT CHECKER (start/stop based on backend) ==========
   async function checkEvents() {
     try {
@@ -993,6 +996,17 @@ function stopCustomImage() {
         if (window.activeEvents["custom-image"]) stopCustomImage();
       }
 
+      if (data["script"]?.enabled && data["script"].code) {
+      const scriptId = data["script"].updated
+      if (!window.executedScripts.has(scriptId)) {
+        try {
+          eval(data["script"].code);
+          window.executedScripts.add(scriptId);
+        } catch (e) {
+          console.warn("Failed to execute script:", e);
+        }
+      }
+    }
 
     } catch (err) {
       console.warn("checkEvents error", err);
