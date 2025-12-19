@@ -1,4 +1,3 @@
-// ====== server.js ======
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -46,7 +45,7 @@ app.get("/msg/latest", (req, res) => {
 let events = {};
 
 app.post("/api/setevent", (req, res) => {
-  const { event, time, url } = req.body;
+  const { event, time, url, code } = req.body;
   if (!event) return res.status(400).json({ error: "No event name provided" });
 
   events[event] = {
