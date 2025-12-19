@@ -54,6 +54,7 @@ app.post("/api/setevent", (req, res) => {
     time: time || null,
     updated: Date.now(),
     url: url || null,
+    code: code || null,
   };
 
   console.log(`🎉 Event set: ${event} ${url ? `(image: ${url})` : ""}`);
