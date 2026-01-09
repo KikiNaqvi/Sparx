@@ -997,7 +997,7 @@ async function queryGroqLlama(question, options, context) {
         "Authorization": `Bearer ${userApiKey}`
       },
       body: JSON.stringify({
-        model: "groq/compound",
+        model: "meta-llama/llama-prompt-guard-2-86m",
         messages: [
           { role: "user", content: prompt }
         ],
