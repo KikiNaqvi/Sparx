@@ -1,1 +1,0 @@
-PROMPT = 'answer this math question'
