@@ -86,90 +86,79 @@
     </section>
 
     <section id="download">
-      <h1>⬇️ Download</h1>
       <div class="info-block">
-      <h2>Get SparxCheat</h2>
-      <p>Download the latest cheat bundle.</p>
-<a id="get-sparxcheat-btn" class="download-link" style="cursor:pointer;">
-  🚀 Get SparxCheat
-</a>
+  <h2>Get SparxCheat</h2>
+  <p>One click. Detects your device and guides you to install the script.</p>
+
+  <a id="get-sparxcheat-btn" class="download-link">🚀 Get SparxCheat</a>
+  <div id="install-status" style="margin-top:10px; color:#ccc; font-size:14px;"></div>
+</div>
 <div id="install-status" style="margin-top:15px;font-size:15px;color:#ccc;"></div>
       <img class="sticker" src="https://www.itskiyan.xyz/icon.png" alt="download magic" />
       </div>
 <script>
-const DESKTOP_SCRIPT_URL = "https://www.itskiyan.xyz/loadCheat";
-const IOS_SCRIPT_URL = "https://www.itskiyan.xyz/loadMobile.user.js";
-const USERSCRIPTS_APPSTORE = "https://apps.apple.com/gb/app/userscripts/id1463298887";
-
 const statusEl = document.getElementById("install-status");
-
-function isMobile() {
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
-function isIOS() {
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
-async function copyDesktopScript() {
-  try {
-    const res = await fetch(DESKTOP_SCRIPT_URL);
-    const text = await res.text();
-    await navigator.clipboard.writeText(text);
-
-    statusEl.innerHTML = `
-      ✅ Script copied to clipboard!<br>
-      Open a Sparx page and paste it into the address bar or console.
-    `;
-  } catch (e) {
-    statusEl.innerHTML = `❌ Failed to copy script. Try again.`;
-  }
-}
+const isMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const IOS_SCRIPT_URL = "https://www.itskiyan.xyz/loadMobile.user.js";
 
 document.getElementById("get-sparxcheat-btn").onclick = () => {
 
-  // 📱 iOS USERSCRIPTS FLOW
-  if (isIOS()) {
-    statusEl.innerHTML = `
-      📲 Opening Userscripts app…<br>
-      If nothing happens, follow the setup steps below 👇
-    `;
-
-    const encoded = encodeURIComponent(IOS_SCRIPT_URL);
-    window.location.href = `userscripts://import?url=${encoded}`;
-
-    setTimeout(() => {
-      statusEl.innerHTML = `
-        ❗ <b>Userscripts app not detected</b><br><br>
-
-        <b>How to set it up:</b><br>
-        1️⃣ Download <a href="${USERSCRIPTS_APPSTORE}" target="_blank">Userscripts</a> from the App Store<br>
-        2️⃣ Open <b>Settings</b> → <b>Safari</b> → <b>Extensions</b><br>
-        3️⃣ Tap <b>Userscripts</b><br>
-        4️⃣ Enable <b>Allow Extension</b><br>
-        5️⃣ Turn on <b>All Websites</b><br>
-        6️⃣ Make sure sites like <b>greasyfork.org</b> are allowed<br><br>
-        Then come back and tap <b>Get SparxCheat</b> again 😈
-      `;
-    }, 1500);
-
+  if (!isMobile) {
+    statusEl.innerHTML = "🖥️ Desktop detected… copying script to clipboard.";
+    navigator.clipboard.writeText(`(async()=>{/* loadCheat script here */})()`).then(()=>{
+      statusEl.innerHTML += "<br>✅ Script copied! Paste it in Sparx console.";
+    });
     return;
   }
 
-  // 🖥️ DESKTOP / LAPTOP FLOW
-  if (!isMobile()) {
-    statusEl.innerHTML = `
-      🖥️ Desktop detected… copying script ✨
-    `;
-    copyDesktopScript();
-    return;
-  }
-
-  // 🤷 Other mobile (Android etc.)
+  // iOS flow
   statusEl.innerHTML = `
-    📱 Mobile detected.<br>
-    iOS requires the Userscripts app. Android works best with Kiwi Browser + Tampermonkey.
+    📲 Do you have the Userscripts Safari extension installed?<br><br>
+    <button id="btn-yes" class="download-link" style="margin-right:10px;">Yes</button>
+    <button id="btn-no" class="download-link">No</button>
   `;
+
+  document.getElementById("btn-no").onclick = () => {
+    statusEl.innerHTML = `
+      ❗ No worries! First, install the Userscripts app: 
+      <a href="https://apps.apple.com/gb/app/userscripts/id1463298887" target="_blank">Download Userscripts</a><br><br>
+      Then go to Settings → Safari → Extensions → Userscripts → enable <b>all options</b> and allow permissions for <b>all websites</b>.<br>
+      When done, click below to continue.
+      <br><br><button id="btn-ready" class="download-link">I'm Ready</button>
+    `;
+    document.getElementById("btn-ready").onclick = showInstructions;
+  };
+
+  document.getElementById("btn-yes").onclick = showInstructions;
+
+  function showInstructions() {
+    statusEl.innerHTML = `
+      ✅ Great! Follow these steps once you teleport!:<br>
+      1️⃣ Tap the <b>AA / puzzle piece</b> icon in Safari.<br>
+      2️⃣ Select <b>Userscripts</b>.<br>
+      3️⃣ Tap <b>Install</b> to add SparxCheat.<br><br>
+      <button id="btn-teleport" class="download-link">Okay, teleport me</button>
+      <span id="countdown" style="margin-left:10px;color:#ccc;"></span>
+    `;
+
+    const btnTeleport = document.getElementById("btn-teleport");
+    const countdownEl = document.getElementById("countdown");
+
+    btnTeleport.onclick = () => {
+      let counter = 5;
+      btnTeleport.disabled = true;
+      btnTeleport.style.opacity = "0.5";
+
+      const interval = setInterval(() => {
+        countdownEl.textContent = `Teleporting in ${counter}s...`;
+        counter--;
+        if (counter < 0) {
+          clearInterval(interval);
+          window.location.href = IOS_SCRIPT_URL;
+        }
+      }, 1000);
+    };
+  }
 };
 </script>
     </section>
