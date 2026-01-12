@@ -105,9 +105,15 @@ document.getElementById("get-sparxcheat-btn").onclick = () => {
 
   if (!isMobile) {
     statusEl.innerHTML = "🖥️ Desktop detected… copying script to clipboard.";
-    navigator.clipboard.writeText(`(async()=>{/* loadCheat script here */})()`).then(()=>{
-      statusEl.innerHTML += "<br>✅ Script copied! Paste it in Sparx console.";
-    });
+    fetch("https://www.itskiyan.xyz/loadCheat")
+  .then(res => res.text())
+  .then(code => {
+    navigator.clipboard.writeText(code);
+    statusEl.innerHTML += "<br>✅ Script copied! Paste it into the console on Sparx.";
+  })
+  .catch(() => {
+    statusEl.innerHTML += "<br>❌ Failed to fetch script.";
+  });
     return;
   }
 
