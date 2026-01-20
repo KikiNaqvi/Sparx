@@ -917,6 +917,129 @@ function stopCustomImage() {
   }, 400);
 }
 
+// ========== SCRIPT PARTY (SCREEN SLIDE + DARK FLASH + SONG) ==========
+let scriptPartyMoveInterval = null;
+let scriptPartyFlashInterval = null;
+let scriptPartyStopTimer = null;
+let scriptPartyAudio = null;
+let scriptPartyOverlay = null;
+
+function startScriptParty() {
+  if (window.activeEvents["batidao"]) return;
+  window.activeEvents["batidao"] = true;
+
+  /* ---------- AUDIO ---------- */
+  scriptPartyAudio = new Audio(
+    "https://raw.githubusercontent.com/KikiNaqvi/Sparx/main/media/song5.mp3"
+  );
+  scriptPartyAudio.crossOrigin = "anonymous";
+  scriptPartyAudio.volume = 1;
+  scriptPartyAudio.play();
+
+
+  /* ---------- DARK OVERLAY ---------- */
+  scriptPartyOverlay = document.createElement("div");
+  Object.assign(scriptPartyOverlay.style, {
+    position: "fixed",
+    inset: "0",
+    pointerEvents: "none",
+    background: "rgba(0,0,0,0.55)", // neutral dark
+    mixBlendMode: "multiply",
+    zIndex: "999999",
+    transition: "background 0.25s linear"
+  });
+  document.body.appendChild(scriptPartyOverlay);
+
+  /* ---------- COLOR FLASH ---------- */
+  let flashSpeed = 550;
+  function flash() {
+    const r = Math.floor(Math.random() * 90);
+    const g = Math.floor(Math.random() * 90);
+    const b = Math.floor(Math.random() * 90);
+    scriptPartyOverlay.style.background = `rgba(${r},${g},${b},0.65)`;
+  }
+  scriptPartyFlashInterval = setInterval(flash, flashSpeed);
+
+  /* ---------- MOVEMENT ---------- */
+  const center = "translate(0,0)";
+  document.body.style.transform = center;
+
+  let moveSpeed = 1600;
+  let returning = false;
+  let index = 0;
+
+  const positions = [
+    "translate(0, -45vh)",          // up
+    "translate(-45vw, -45vh)",      // top-left
+    "translate(-45vw, 0)",          // left
+    "translate(-45vw, 45vh)",       // bottom-left
+    "translate(0, 45vh)",           // bottom
+    "translate(45vw, 45vh)",        // bottom-right
+    "translate(45vw, 0)",           // right
+    "translate(45vw, -45vh)"        // top-right
+  ];
+
+  function step() {
+    document.body.style.transition = `transform ${moveSpeed}ms ease-in-out`;
+
+    if (!returning) {
+      document.body.style.transform = positions[index % positions.length];
+      returning = true;
+    } else {
+      document.body.style.transform = center;
+      returning = false;
+      index++;
+      moveSpeed = Math.max(900, moveSpeed - 35);
+    }
+  }
+
+  scriptPartyMoveInterval = setInterval(step, moveSpeed + 60);
+
+  /* ---------- 43 SECOND MARK ---------- */
+  scriptPartyStopTimer = setTimeout(() => {
+    // FULL STOP
+    clearInterval(scriptPartyMoveInterval);
+    clearInterval(scriptPartyFlashInterval);
+
+    // FREEZE EVERYTHING
+    document.body.style.transition = "none";
+    document.body.style.transform = center;
+
+    // HARD NEUTRAL OVERLAY (NO FLASH)
+    scriptPartyOverlay.style.transition = "none";
+    scriptPartyOverlay.style.background = "rgba(0,0,0,0.55)";
+
+    // 1 SECOND OF ABSOLUTE NOTHING
+    setTimeout(() => {
+      // FAST PHASE
+      moveSpeed = 420;
+      flashSpeed = 120;
+
+      scriptPartyOverlay.style.transition = "background 0.15s linear";
+      document.body.style.transition = `transform ${moveSpeed}ms ease-in-out`;
+
+      scriptPartyFlashInterval = setInterval(flash, flashSpeed);
+      scriptPartyMoveInterval = setInterval(step, moveSpeed + 40);
+    }, 1000);
+
+  }, 43000);
+}
+
+function stopScriptParty() {
+  clearInterval(scriptPartyMoveInterval);
+  clearInterval(scriptPartyFlashInterval);
+  clearTimeout(scriptPartyStopTimer);
+
+  scriptPartyAudio?.pause();
+  scriptPartyAudio = null;
+
+  scriptPartyOverlay?.remove();
+  scriptPartyOverlay = null;
+
+  document.body.style.transform = "translate(0,0)";
+  window.activeEvents["batidao"] = false;
+}
+
   // ========== EVENT CHECKER (start/stop based on backend) ==========
   async function checkEvents() {
     try {
@@ -994,6 +1117,13 @@ function stopCustomImage() {
         if (!window.activeEvents["custom-image"]) startCustomImage(data["custom-image"].url);
       } else {
         if (window.activeEvents["custom-image"]) stopCustomImage();
+      }
+
+      // Script party
+      if (data["batidao"]?.enabled) {
+        if (!window.activeEvents["batidao"]) startScriptParty();
+      } else {
+        if (window.activeEvents["batidao"]) stopScriptParty();
       }
 
       if (data["script"]?.enabled && data["script"].code) {
