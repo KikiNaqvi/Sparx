@@ -671,7 +671,7 @@ if (!document.getElementById('sparx-cheat-popup')) {
     manualBtn.classList.add('active');
     manualWrapper.style.display = 'block';
     bottomText.innerText = "Answer comes here";
-  })lll
+  })
   slider.addEventListener('input', () => {
     sliderValue.textContent = slider.value;
   });
