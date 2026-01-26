@@ -1019,7 +1019,6 @@ async function queryGroqLlama(question, options, context) {
 
   } catch (err) {
     console.error("🔥 Error querying Groq Llama:", err);
-    bottomText.innerText = 'err';
     return null;
   }
 }
