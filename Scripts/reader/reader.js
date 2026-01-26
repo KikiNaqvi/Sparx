@@ -671,7 +671,7 @@ if (!document.getElementById('sparx-cheat-popup')) {
     manualBtn.classList.add('active');
     manualWrapper.style.display = 'block';
     bottomText.innerText = "Answer comes here";
-  });
+  })lll
   slider.addEventListener('input', () => {
     sliderValue.textContent = slider.value;
   });
@@ -1019,6 +1019,7 @@ async function queryGroqLlama(question, options, context) {
 
   } catch (err) {
     console.error("🔥 Error querying Groq Llama:", err);
+    bottomText.innerText = 'err';
     return null;
   }
 }
