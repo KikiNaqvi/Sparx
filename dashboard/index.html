@@ -100,13 +100,13 @@ const statusEl = document.getElementById("install-status");
 const isMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 const IOS_SCRIPT_URL = "https://www.itskiyan.xyz/loadMobile.user.js";
 
-getSparxcheat() {
+function getSparxcheat() {
 
   if (!isMobile) {
     statusEl.innerHTML = "🖥️ Desktop detected… copying script to clipboard.";
     
-      const res = await fetch("https://www.itskiyan.xyz/loadCheat");
-      const code = await res.text();
+      const res = fetch("https://www.itskiyan.xyz/loadCheat");
+      const code = res.text();
 
       navigator.clipboard.writeText(code);
 
