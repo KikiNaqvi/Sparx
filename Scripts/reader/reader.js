@@ -983,6 +983,8 @@ async function queryGroqLlama(question, options, context) {
     You are an automated multiple‑choice answering system.
     ONLY RESPOND WITH THE ANSWER TEXT, DO NOT ADD ANY EXTRA WORDS OR PUNCTUATION.
     YOUR RESPONSE MUST MATCH ONE OF THE PROVIDED OPTIONS EXACTLY.
+    DONT RESPOND WITH THE INDEX OF THE ANSWER.
+    IF NO OPTION CAN BE FOUND RESPOND WITH NOT IN STORY.
     Context: ${context}
     Question: ${question}
     Options: ${options.join(', ')}
