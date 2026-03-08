@@ -91,7 +91,6 @@
   <p>One click. Detects your device and guides you to install the script.</p>
 
   <a id="get-sparxcheat-btn" class="download-link">🚀 Get SparxCheat</a>
-  <div id="install-status" style="margin-top:10px; color:#ccc; font-size:14px;"></div>
 </div>
 <div id="install-status" style="margin-top:15px;font-size:15px;color:#ccc;"></div>
       <img class="sticker" src="https://www.itskiyan.xyz/icon.png" alt="download magic" />
@@ -105,15 +104,19 @@ document.getElementById("get-sparxcheat-btn").onclick = () => {
 
   if (!isMobile) {
     statusEl.innerHTML = "🖥️ Desktop detected… copying script to clipboard.";
-    fetch("https://www.itskiyan.xyz/loadCheat")
-  .then(res => res.text())
-  .then(code => {
-    navigator.clipboard.writeText(code);
-    statusEl.innerHTML += "<br>✅ Script copied! Paste it into the console on Sparx.";
-  })
-  .catch(() => {
-    statusEl.innerHTML += "<br>❌ Failed to fetch script.";
-  });
+
+    try {
+      const res = await fetch("https://www.itskiyan.xyz/loadCheat");
+      const code = await res.text();
+
+      await navigator.clipboard.writeText(code);
+
+      statusEl.innerHTML += "<br>✅ Script copied! Paste it into the console on Sparx.";
+    } catch (e) {
+      console.error(e);
+      statusEl.innerHTML += "<br>❌ Failed to copy script.";
+    }
+
     return;
   }
 
