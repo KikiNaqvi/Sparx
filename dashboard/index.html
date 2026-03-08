@@ -107,8 +107,15 @@ async function getSparxcheat() {
 
     const res = await fetch("https://www.itskiyan.xyz/loadCheat");
     const code = await res.text();
-
-    await navigator.clipboard.writeText(code);
+    
+    const textarea = document.createElement("textarea");
+    textarea.value = code;
+    document.body.appendChild(textarea);
+    
+    textarea.select();
+    document.execCommand("copy");
+    
+    textarea.remove();
 
     statusEl.innerHTML += "<br>✅ Script copied! Paste it into the console on Sparx.";
     return;
