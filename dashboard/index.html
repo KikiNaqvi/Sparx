@@ -90,7 +90,7 @@
   <h2>Get SparxCheat</h2>
   <p>One click. Detects your device and guides you to install the script.</p>
 
-  <a id="get-sparxcheat-btn" class="download-link">🚀 Get SparxCheat</a>
+  <button onclick="getSparxcheat()" class="download-link">🚀 Get SparxCheat</button>
 </div>
 <div id="install-status" style="margin-top:15px;font-size:15px;color:#ccc;"></div>
       <img class="sticker" src="https://www.itskiyan.xyz/icon.png" alt="download magic" />
@@ -100,7 +100,7 @@ const statusEl = document.getElementById("install-status");
 const isMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 const IOS_SCRIPT_URL = "https://www.itskiyan.xyz/loadMobile.user.js";
 
-document.getElementById("get-sparxcheat-btn").onclick = async () => {
+getSparxcheat() {
 
   if (!isMobile) {
     statusEl.innerHTML = "🖥️ Desktop detected… copying script to clipboard.";
