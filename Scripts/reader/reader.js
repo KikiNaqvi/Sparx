@@ -332,7 +332,7 @@ function showApiKeyPopup() {
   modal.innerHTML = `
     <!-- Header with logo and title -->
     <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-      <img src="https://kikinaqvi.github.io/Sparx/icon.png" style="width:60px; height:60px; border-radius:10px;">
+      <img src="https://sparxcheat.onrender.com/Sparx/icon.png" style="width:60px; height:60px; border-radius:10px;">
       <h2 style="margin:0; font-size:1.6em; color:#fff;">SparxCheat AI Key</h2>
     </div>
 
@@ -592,7 +592,7 @@ if (!document.getElementById('sparx-cheat-popup')) {
   wrapper.innerHTML = `
     <div id="popup">
       <div id="popupHeader">
-        <img src="https://kikinaqvi.github.io/Sparx/icon.png" style="height: 20px; width: 20px;">
+        <img src="https://sparxcheat.onrender.com/Sparx/icon.png" style="height: 20px; width: 20px;">
         <span style="font-size: 1.2em;">SparxCheat</span>
         <div class="window-controls">
           <span id="minBtn">–</span>
