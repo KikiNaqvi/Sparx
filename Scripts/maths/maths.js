@@ -173,7 +173,7 @@ async function checkUserApiKey(username) {
 // --- Groq API helper ---
 async function callGroq(messages, apiKey) {
   const payload = {
-    model: "meta-llama/llama-4-scout-17b-16e-instruct",
+    model: "openai/gpt-oss-120b",
     messages: messages,
     temperature: 0,
     max_completion_tokens: 2048,
