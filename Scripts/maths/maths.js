@@ -416,7 +416,7 @@ if (!document.getElementById('sparx-cheat-popup')) {
   wrapper.innerHTML = `
     <div id="popup">
       <div id="popupHeader">
-        <img src="https://itskiyan.xyz/icon.png" style="height: 20px; width: 20px;">
+        <img src="https://sparxcheat.onrender.com/icon.png" style="height: 20px; width: 20px;">
         <span style="font-size: 1.2em;">SparxCheat</span>
         <div class="window-controls">
           <span id="minBtn">–</span>
