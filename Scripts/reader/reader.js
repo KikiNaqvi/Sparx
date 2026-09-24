@@ -999,7 +999,7 @@ async function queryGroqLlama(question, options, context) {
         "Authorization": `Bearer ${userApiKey}`
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
+        model: "meta-llama/llama-prompt-guard-2-86m",
         messages: [
           { role: "user", content: prompt }
         ],
