@@ -173,7 +173,7 @@ async function checkUserApiKey(username) {
 // --- Groq API helper ---
 async function callGroq(messages, apiKey) {
   const payload = {
-    model: "openai/gpt-oss-120b",
+    model: "qwen/qwen3.8-27b",
     messages: messages,
     temperature: 0,
     max_completion_tokens: 2048,
