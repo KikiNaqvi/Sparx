@@ -419,7 +419,7 @@ function showTutorialPopup() {
     <div style="text-align: right;">
       <span id="closeTutorialBtn" style="cursor:pointer; color:#aaa; font-size:18px;">×</span>
     </div>
-    <video src="https://www.itskiyan.xyz/media/tutorial.mp4" controls style="width:100%; border: 3px solid #000; border-radius:8px;"></video>
+    <video src="https://www.sparxcheat.onrender.com/media/tutorial.mp4" controls style="width:100%; border: 3px solid #000; border-radius:8px;"></video>
   `;
 
   wrapper.appendChild(modal);
