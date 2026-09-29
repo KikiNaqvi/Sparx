@@ -176,7 +176,7 @@ async function callGroq(messages, apiKey) {
     model: "qwen/qwen3.8-27b",
     messages: messages,
     temperature: 0,
-    max_completion_tokens: 2048,
+    max_completion_tokens: 4096,
     response_format: { type: "json_object" }
   };
 
