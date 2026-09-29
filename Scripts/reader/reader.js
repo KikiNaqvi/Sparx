@@ -973,58 +973,94 @@ const clickButton = (buttonText) => {
 };
 
 async function queryGroqLlama(question, options, context) {
-  if (!userApiKey) {
-    console.error("❌ No user API key!");
+  if (!apiKeys || apiKeys.length === 0) {
+    console.error("❌ No API keys!");
     return null;
   }
 
-  // Build prompt
   const prompt = `
-    You are an automated multiple‑choice answering system.
-    ONLY RESPOND WITH THE ANSWER TEXT, DO NOT ADD ANY EXTRA WORDS OR PUNCTUATION.
-    YOUR RESPONSE MUST MATCH ONE OF THE PROVIDED OPTIONS EXACTLY.
-    DONT RESPOND WITH THE INDEX OF THE ANSWER.
-    IF NO OPTION CAN BE FOUND RESPOND WITH NOT IN STORY.
-    Context: ${context}
-    Question: ${question}
-    Options: ${options.join(', ')}
-    Answer:
+You are an automated multiple-choice answering system.
+ONLY RESPOND WITH THE ANSWER TEXT, DO NOT ADD ANY EXTRA WORDS OR PUNCTUATION.
+YOUR RESPONSE MUST MATCH ONE OF THE PROVIDED OPTIONS EXACTLY.
+DONT RESPOND WITH THE INDEX OF THE ANSWER.
+IF NO OPTION CAN BE FOUND RESPOND WITH NOT IN STORY.
+
+Context: ${context}
+Question: ${question}
+Options: ${options.join(', ')}
+Answer:
   `;
 
-  try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${userApiKey}`
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
-        messages: [
-          { role: "user", content: prompt }
-        ],
-        max_tokens: 512,
-        temperature: 0.0
-      })
-    });
+  // Try every available key once
+  for (let attempt = 0; attempt < apiKeys.length; attempt++) {
+    const key = apiKeys[currentKeyIndex];
 
-    if (!res.ok) {
-      console.error("🧪 Groq API Error:", res.status, await res.text());
+    console.log(`🔑 Trying API key #${currentKeyIndex + 1}`);
+
+    try {
+      const res = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${key}`
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-oss-120b",
+            messages: [
+              {
+                role: "user",
+                content: prompt
+              }
+            ],
+            max_tokens: 512,
+            temperature: 0.0
+          })
+        }
+      );
+
+      // ✅ Rate limited → move to next key
+      if (res.status === 429) {
+        console.warn(
+          `⏳ API key #${currentKeyIndex + 1} hit 429. Rotating...`
+        );
+
+        if (attempt < apiKeys.length - 1) {
+          rotateApiKey();
+          continue;
+        }
+
+        console.error("❌ All API keys are rate limited.");
+        return null;
+      }
+
+      // Other errors
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(
+          `🧪 Groq API Error (${res.status}):`,
+          errorText
+        );
+        return null;
+      }
+
+      const data = await res.json();
+      const answer =
+        data.choices?.[0]?.message?.content?.trim();
+
+      console.log("📡 Groq Output:", answer);
+
+      return answer || null;
+
+    } catch (err) {
+      console.error("🔥 Error querying Groq:", err);
       return null;
     }
-
-    const data = await res.json();
-    // For OpenAI‑compatible responses, the text is usually here:
-    const answer = data.choices?.[0]?.message?.content?.trim();
-    console.log("📡 Groq Llama Output:", answer);
-    return answer || "No answer found";
-
-  } catch (err) {
-    console.error("🔥 Error querying Groq Llama:", err);
-    return null;
   }
-}
 
+  return null;
+}
 
 
 // === Auto Answer Logic ===
