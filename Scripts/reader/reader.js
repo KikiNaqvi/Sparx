@@ -530,7 +530,7 @@ if (!document.getElementById('sparx-cheat-popup')) {
       position: fixed; top: 20px; right: 20px; width: 280px;
       background: linear-gradient(180deg, #121212, #212121, #303030);
       border-radius: 12px; box-shadow: 0 0 16px rgba(0,0,0,0.8);
-      color: #f0f0f0; z-index: 999999; overflow: hidden; font-size: 14px;
+      color: #f0f0f0; z-index: 999999; overflow: visible; font-size: 14px;
     }
     #popupHeader {
       background: rgba(0,0,0,0.6); padding: 10px 15px; cursor: move;
