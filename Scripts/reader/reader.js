@@ -583,6 +583,104 @@ if (!document.getElementById('sparx-cheat-popup')) {
       0% { transform: translateY(100%); opacity: 0.2; }
       100% { transform: translateY(-100%) scale(1.4); opacity: 0; }
     }
+    .pumpkin-decoration {
+      position: absolute;
+      font-size: 50px;
+      z-index: 10;
+      filter:
+        drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8))
+        drop-shadow(0 0 20px rgba(255, 100, 0, 0.6));
+      animation: pumpkinGlow 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+    
+    @keyframes pumpkinGlow {
+      0%,
+      100% {
+        filter:
+          drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8))
+          drop-shadow(0 0 20px rgba(255, 100, 0, 0.6));
+      }
+    
+      50% {
+        filter:
+          drop-shadow(0 4px 12px rgba(0, 0, 0, 0.9))
+          drop-shadow(0 0 30px rgba(255, 100, 0, 0.9));
+      }
+    }
+    
+    .pumpkin-top-left {
+      top: 25px;
+      left: -15px;
+      transform: rotate(-15deg);
+    }
+    
+    .pumpkin-bottom-right {
+      bottom: 10px;
+      right: -15px;
+      transform: rotate(15deg);
+    }
+    
+    .cobweb-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0.6;
+    }
+    
+    .cobweb-svg {
+      position: absolute;
+      top: 50px;
+      left: -10px;
+      width: 320px;
+      height: 400px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    }
+    
+    .floating-ghost {
+      position: absolute;
+      font-size: 35px;
+      opacity: 0.4;
+      z-index: 4;
+      animation: floatGhost 6s ease-in-out infinite;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+      pointer-events: none;
+    }
+    
+    @keyframes floatGhost {
+      0%,
+      100% {
+        transform: translateY(0) translateX(0);
+      }
+    
+      25% {
+        transform: translateY(-15px) translateX(5px);
+      }
+    
+      50% {
+        transform: translateY(-5px) translateX(-5px);
+      }
+    
+      75% {
+        transform: translateY(-12px) translateX(3px);
+      }
+    }
+    
+    .ghost-1 {
+      top: 100px;
+      right: -25px;
+      animation-delay: 0s;
+    }
+    
+    .ghost-2 {
+      top: 250px;
+      left: -30px;
+      animation-delay: 2s;
+    }
   `;
   document.head.appendChild(style);
 
@@ -633,6 +731,125 @@ if (!document.getElementById('sparx-cheat-popup')) {
           <button class="cheat-btn"><i class="fa fa-play"></i> Begin Questions</button>
         </div>
         <div id="bottomText">Answer comes here</div>
+      </div>
+      <!-- Halloween Decorations Overlay -->
+      <div class="pumpkin-decoration pumpkin-top-left">🎃</div>
+      <div class="pumpkin-decoration pumpkin-bottom-right">🎃</div>
+      
+      <div class="floating-ghost ghost-1">👻</div>
+      <div class="floating-ghost ghost-2">👻</div>
+      
+      <div class="cobweb-overlay">
+        <svg
+          class="cobweb-svg"
+          viewBox="0 0 320 400"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <filter id="cobwebGlow">
+              <feGaussianBlur
+                stdDeviation="1"
+                result="coloredBlur"
+              />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+      
+          <path
+            d="M 10 60 Q 80 100, 150 140 T 290 220"
+            stroke="#888"
+            stroke-width="1.5"
+            fill="none"
+            opacity="0.5"
+            filter="url(#cobwebGlow)"
+          />
+      
+          <path
+            d="M 15 80 Q 85 115, 155 155 T 295 240"
+            stroke="#888"
+            stroke-width="1.2"
+            fill="none"
+            opacity="0.4"
+            filter="url(#cobwebGlow)"
+          />
+      
+          <path
+            d="M 20 100 Q 90 130, 160 170 T 300 260"
+            stroke="#888"
+            stroke-width="1"
+            fill="none"
+            opacity="0.3"
+            filter="url(#cobwebGlow)"
+          />
+      
+          <line
+            x1="10"
+            y1="60"
+            x2="100"
+            y2="150"
+            stroke="#888"
+            stroke-width="1"
+            opacity="0.4"
+            filter="url(#cobwebGlow)"
+          />
+      
+          <line
+            x1="10"
+            y1="60"
+            x2="150"
+            y2="200"
+            stroke="#888"
+            stroke-width="1"
+            opacity="0.3"
+            filter="url(#cobwebGlow)"
+          />
+      
+          <line
+            x1="10"
+            y1="60"
+            x2="200"
+            y2="250"
+            stroke="#888"
+            stroke-width="0.8"
+            opacity="0.3"
+            filter="url(#cobwebGlow)"
+          />
+      
+          <path
+            d="M 10 60 Q 50 120, 90 180"
+            stroke="#888"
+            stroke-width="0.8"
+            fill="none"
+            opacity="0.35"
+            filter="url(#cobwebGlow)"
+          />
+      
+          <path
+            d="M 30 90 Q 100 140, 170 190"
+            stroke="#888"
+            stroke-width="0.8"
+            fill="none"
+            opacity="0.35"
+            filter="url(#cobwebGlow)"
+          />
+      
+          <path
+            d="M 50 120 Q 130 170, 210 220"
+            stroke="#888"
+            stroke-width="0.8"
+            fill="none"
+            opacity="0.35"
+            filter="url(#cobwebGlow)"
+          />
+      
+          <circle cx="80" cy="100" r="2" fill="#aaa" opacity="0.6" />
+          <circle cx="150" cy="140" r="2" fill="#aaa" opacity="0.6" />
+          <circle cx="220" cy="180" r="2" fill="#aaa" opacity="0.6" />
+          <circle cx="290" cy="220" r="2" fill="#aaa" opacity="0.6" />
+        </svg>
       </div>
     </div>
   `;
