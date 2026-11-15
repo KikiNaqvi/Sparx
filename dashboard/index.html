@@ -86,15 +86,22 @@
     </section>
 
     <section id="download">
-      <div class="info-block">
-  <h2>Get SparxCheat</h2>
-  <p>One click. Detects your device and guides you to install the script.</p>
+  <div class="info-block">
+    <h2>Get SparxCheat</h2>
+    <p>One click. Detects your device and guides you to install the script.</p>
 
-  <button onclick="getSparxcheat()" class="download-link">🚀 Get SparxCheat</button>
-</div>
-<div id="install-status" style="margin-top:15px;font-size:15px;color:#ccc;"></div>
-      <img class="sticker" src="https://sparxcheat.onrender.com/icon.png" alt="download magic" />
-      </div>
+    <button onclick="getSparxcheat()" class="download-link">
+      🚀 Get SparxCheat
+    </button>
+
+    <img class="sticker"
+         src="https://sparxcheat.onrender.com/icon.png"
+         alt="download magic" />
+  </div>
+
+  <div id="install-status"
+       style="margin-top:15px;font-size:15px;color:#ccc;">
+  </div>
 <script>
 const statusEl = document.getElementById("install-status");
 const isMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -178,45 +185,239 @@ async function getSparxcheat() {
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script>
-    firebase.initializeApp({apiKey: "AIzaSyAS-98Bz91JuQAtuOl_qsyPc7Jp1tuowOw",
-      authDomain: "hip-fuze-305914.firebaseapp.com",
-      projectId: "hip-fuze-305914",
-      storageBucket: "hip-fuze-305914.firebasestorage.app",
-      messagingSenderId: "454217699115",
-      appId: "1:454217699115:web:dbd50f2e564cf0e711ff6e",
-      measurementId: "G-R2VVQ168SP"});
-    const auth = firebase.auth();
-    const user = auth.currentUser;
-    // Greet
-    auth.onAuthStateChanged(u => { document.getElementById('greeting').textContent = `Hey, ${u.displayName||u.email}!`; });
-    // Tabs
-    document.querySelectorAll('nav button').forEach(btn => btn.addEventListener('click', () => {
-      if(btn.id==='btn-signout') return;
-      document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-      document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(btn.id.replace('tab-','')).classList.add('active');
-    }));
-    // Sign Out
-    document.getElementById('btn-signout').addEventListener('click', () => {
-      auth.signOut().then(()=>{ localStorage.setItem('sparxLoggedIn','false'); window.location.href='https://sparxcheat.onrender.com/'; });
+  
+<script>
+  // ==========================================
+  // CONFIGURATION
+  // ==========================================
+
+  const BACKEND_URL = "https://livemsg.onrender.com";
+  const LOGIN_URL = "https://sparxcheat.onrender.com/";
+
+  // ==========================================
+  // FIREBASE
+  // ==========================================
+
+  firebase.initializeApp({
+    apiKey: "AIzaSyAS-98Bz91JuQAtuOl_qsyPc7Jp1tuowOw",
+    authDomain: "hip-fuze-305914.firebaseapp.com",
+    projectId: "hip-fuze-305914",
+    storageBucket: "hip-fuze-305914.firebasestorage.app",
+    messagingSenderId: "454217699115",
+    appId: "1:454217699115:web:dbd50f2e564cf0e711ff6e",
+    measurementId: "G-R2VVQ168SP"
+  });
+
+  const auth = firebase.auth();
+
+  let currentFirebaseUser = null;
+  let currentGoogleUser = null;
+
+  // ==========================================
+  // USER GREETING
+  // ==========================================
+
+  function displayUser(user) {
+    const greeting = document.getElementById("greeting");
+
+    const name = user.name || user.displayName || user.email || "User";
+
+    greeting.textContent = `Hey, ${name}!`;
+  }
+
+  // ==========================================
+  // GOOGLE SESSION
+  // ==========================================
+
+  async function getGoogleSession() {
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/me`, {
+        method: "GET",
+        credentials: "include"
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+
+      // Supports either { authenticated: true, user: {...} }
+      // or { success: true, user: {...} }
+      const user = data.user;
+
+      if (!user) return null;
+      if (data.authenticated === false || data.success === false) {
+        return null;
+      }
+
+      return user;
+
+    } catch (error) {
+      console.error("Google session error:", error);
+      return null;
+    }
+  }
+
+  // ==========================================
+  // AUTHENTICATION CHECK
+  // ==========================================
+
+  auth.onAuthStateChanged(async firebaseUser => {
+    currentFirebaseUser = firebaseUser;
+
+    // Firebase email/password account
+    if (firebaseUser) {
+
+      if (!firebaseUser.emailVerified) {
+        await auth.signOut();
+
+        alert("Please verify your email before accessing the dashboard.");
+
+        window.location.replace(LOGIN_URL);
+        return;
+      }
+
+      currentGoogleUser = null;
+
+      displayUser({
+        name: firebaseUser.displayName,
+        email: firebaseUser.email
+      });
+
+      console.log("Authenticated with Firebase:", firebaseUser.email);
+      return;
+    }
+
+    // Google account authenticated through Express backend
+    const googleUser = await getGoogleSession();
+
+    if (googleUser) {
+      currentGoogleUser = googleUser;
+
+      displayUser(googleUser);
+
+      console.log("Authenticated with Google:", googleUser.email);
+      return;
+    }
+
+    // Neither authentication system has a valid session
+    console.log("No authenticated session found.");
+
+    window.location.replace(LOGIN_URL);
+  });
+
+  // ==========================================
+  // TABS
+  // ==========================================
+
+  document.querySelectorAll("nav button").forEach(btn => {
+    btn.addEventListener("click", () => {
+
+      if (btn.id === "btn-signout") return;
+
+      document.querySelectorAll("nav button")
+        .forEach(b => b.classList.remove("active"));
+
+      document.querySelectorAll("main section")
+        .forEach(s => s.classList.remove("active"));
+
+      btn.classList.add("active");
+
+      const sectionId = btn.id.replace("tab-", "");
+
+      document.getElementById(sectionId).classList.add("active");
     });
-    // Settings handlers
-    document.getElementById('btn-update-profile').addEventListener('click', ()=>{
-      const u=auth.currentUser;
-      const name=document.getElementById('new-username').value;
-      const pass=document.getElementById('new-password').value;
-      const email=document.getElementById('new-email').value;
-      if(name) u.updateProfile({displayName:name});
-      if(pass) u.updatePassword(pass).catch(()=>alert('Cannot update password, re-auth required')); 
-      if(email) u.updateEmail(email).catch(()=>alert('Cannot update email, re-auth required'));
-      alert('Profile update attempted.');
-    });
-    document.getElementById('btn-send-verif').addEventListener('click', ()=>{
-      auth.currentUser.sendEmailVerification().then(()=>alert('Verification email sent.'));
-    });
-    // Stats demo: no real API
-  </script>
+  });
+
+  // ==========================================
+  // SIGN OUT
+  // ==========================================
+
+  document.getElementById("btn-signout").addEventListener("click", async () => {
+
+    try {
+      // Sign out of Firebase if applicable
+      await auth.signOut();
+
+      // Clear the Google backend session if applicable
+      await fetch(`${BACKEND_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include"
+      });
+
+      localStorage.setItem("sparxLoggedIn", "false");
+
+      window.location.replace(LOGIN_URL);
+
+    } catch (error) {
+      console.error("Sign out error:", error);
+      alert("There was a problem signing out. Please try again.");
+    }
+  });
+
+  // ==========================================
+  // UPDATE PROFILE
+  // ==========================================
+
+  document.getElementById("btn-update-profile").addEventListener("click", async () => {
+
+    const user = currentFirebaseUser;
+
+    if (!user) {
+      alert("Profile editing for Google accounts is not configured yet.");
+      return;
+    }
+
+    const name = document.getElementById("new-username").value.trim();
+    const pass = document.getElementById("new-password").value;
+    const email = document.getElementById("new-email").value.trim();
+
+    try {
+      if (name) {
+        await user.updateProfile({ displayName: name });
+      }
+
+      if (pass) {
+        await user.updatePassword(pass);
+      }
+
+      if (email) {
+        await user.updateEmail(email);
+      }
+
+      displayUser({
+        name: user.displayName,
+        email: user.email
+      });
+
+      alert("Profile updated successfully!");
+
+    } catch (error) {
+      console.error("Profile update error:", error);
+      alert("Could not update profile: " + error.message);
+    }
+  });
+
+  // ==========================================
+  // RESEND VERIFICATION EMAIL
+  // ==========================================
+
+  document.getElementById("btn-send-verif").addEventListener("click", async () => {
+
+    if (!currentFirebaseUser) {
+      alert("Google accounts are already verified by Google.");
+      return;
+    }
+
+    try {
+      await currentFirebaseUser.sendEmailVerification();
+      alert("Verification email sent!");
+
+    } catch (error) {
+      console.error(error);
+      alert("Could not send verification email: " + error.message);
+    }
+  });
+
+</script>
 </body>
 </html>
