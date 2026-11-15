@@ -652,24 +652,18 @@ function isCached() {
 window.handleCredentialResponse = async function(response) {
   try {
     if (!response || !response.credential) {
-      throw new Error("Google did not return a credential.");
+      throw new Error("Google credential missing.");
     }
 
-    console.log("🔐 Google credential received");
-
-    const result = await fetch(
-      `${BACKEND_URL}/auth/google`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          credential: response.credential
-        })
-      }
-    );
+    const result = await fetch(`${BACKEND_URL}/auth/google`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        credential: response.credential
+      })
+    });
 
     const data = await result.json();
 
@@ -677,16 +671,14 @@ window.handleCredentialResponse = async function(response) {
       throw new Error(data.error || "Authentication failed");
     }
 
-    console.log("✅ Google authentication successful!");
-    
-    // Save the token to localStorage so the browser can't block it!
+    // 💾 SAVE TOKEN TO LOCALSTORAGE
     localStorage.setItem("sparx_token", data.token);
 
-    // Redirect to dashboard
+    // Redirect to your dashboard or main view
     window.location.assign("/dashboard");
 
   } catch (error) {
-    console.error("❌ Google Sign-In Error:", error);
+    console.error("Google Sign-In Error:", error);
     alert("Google Sign-In failed: " + error.message);
   }
 };
@@ -697,26 +689,28 @@ window.handleCredentialResponse = async function(response) {
 
 async function checkGoogleSession() {
   try {
+    // 🔑 RETRIEVE TOKEN FROM LOCALSTORAGE
     const token = localStorage.getItem("sparx_token");
     if (!token) return;
 
-    const response = await fetch(
-      `${BACKEND_URL}/auth/me`,
-      {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}` // <--- Send token explicitly
-        }
+    const response = await fetch(`${BACKEND_URL}/auth/me`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}` // <--- ATTACH BEARER TOKEN
       }
-    );
+    });
 
-    if (!response.ok) return;
+    if (!response.ok) {
+      // If token is invalid/expired, clean it up
+      localStorage.removeItem("sparx_token");
+      return;
+    }
 
     const data = await response.json();
 
     if (data.authenticated) {
-      console.log("✅ Valid session found via localStorage token");
-      window.location.replace("/dashboard");
+      console.log("Authenticated as:", data.user.email);
+      // Perform your post-login UI rendering here
     }
 
   } catch (error) {
