@@ -678,7 +678,9 @@ window.handleCredentialResponse = async function(response) {
     }
 
     console.log("✅ Google authentication successful!");
-    console.log("👤 Logged in as:", data.user.email);
+    
+    // Save the token to localStorage so the browser can't block it!
+    localStorage.setItem("sparx_token", data.token);
 
     // Redirect to dashboard
     window.location.assign("/dashboard");
@@ -695,11 +697,16 @@ window.handleCredentialResponse = async function(response) {
 
 async function checkGoogleSession() {
   try {
+    const token = localStorage.getItem("sparx_token");
+    if (!token) return;
+
     const response = await fetch(
       `${BACKEND_URL}/auth/me`,
       {
         method: "GET",
-        credentials: "include"
+        headers: {
+          "Authorization": `Bearer ${token}` // <--- Send token explicitly
+        }
       }
     );
 
@@ -708,7 +715,7 @@ async function checkGoogleSession() {
     const data = await response.json();
 
     if (data.authenticated) {
-      console.log("✅ Existing Google session found");
+      console.log("✅ Valid session found via localStorage token");
       window.location.replace("/dashboard");
     }
 
