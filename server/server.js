@@ -8,6 +8,9 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 
+// REQUIRED on Render/Heroku/Cloudflare so secure cookies work properly behind a proxy
+app.set('trust proxy', 1);
+
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID
 );
@@ -111,97 +114,69 @@ async function authenticate(req, res, next) {
 }
 
 
-// ====== GOOGLE SIGN IN ======
-
+// ====== GOOGLE SIGN IN ROUTE ======
 app.post("/auth/google", async (req, res) => {
   try {
     const { credential } = req.body;
-
     if (!credential) {
-      return res.status(400).json({
-        error: "Google credential missing"
-      });
+      return res.status(400).json({ error: "Google credential missing" });
     }
 
-    // Verify Google ID token
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
-
-    if (
-      !payload ||
-      !payload.sub ||
-      !payload.email ||
-      !payload.email_verified
-    ) {
-      return res.status(401).json({
-        error: "Invalid Google account"
-      });
+    if (!payload || !payload.sub || !payload.email) {
+      return res.status(401).json({ error: "Invalid Google account" });
     }
 
-    // Find or create account
-    let user = await GoogleUser.findOne({
-      googleId: payload.sub
-    });
-
+    // Find or create user in MongoDB
+    let user = await GoogleUser.findOne({ googleId: payload.sub });
     if (!user) {
       user = await GoogleUser.create({
         googleId: payload.sub,
         email: payload.email,
         name: payload.name,
-        picture: payload.picture
+        picture: payload.picture,
       });
-
-      console.log("🆕 New Google user:", user.email);
-
+      console.log("🆕 New Google user created:", user.email);
     } else {
       user.email = payload.email;
       user.name = payload.name;
       user.picture = payload.picture;
-
       await user.save();
-
-      console.log("👋 Returning user:", user.email);
+      console.log("👋 Returning Google user logged in:", user.email);
     }
 
-    // Generate session
+    // Generate JWT session token
     const sessionToken = jwt.sign(
-      {
-        userId: user._id.toString()
-      },
+      { userId: user._id.toString() },
       process.env.SESSION_SECRET,
-      {
-        expiresIn: "7d"
-      }
+      { expiresIn: "7d" }
     );
 
-    // Store session in secure cookie
+    // Set the cookie that your authenticate middleware checks
     res.cookie("session", sessionToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: true,     // Required for HTTPS on Render
+      sameSite: "none", // Required for cross-site cookie passing
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/"
+      path: "/",
     });
 
-    res.json({
+    return res.json({
       success: true,
       user: {
         name: user.name,
         email: user.email,
-        picture: user.picture
-      }
+        picture: user.picture,
+      },
     });
-
   } catch (err) {
     console.error("❌ Google sign-in error:", err);
-
-    res.status(401).json({
-      error: "Google authentication failed"
-    });
+    return res.status(401).json({ error: "Google authentication failed" });
   }
 });
 
