@@ -187,12 +187,16 @@ app.post("/auth/google", async (req, res) => {
 
     // Store session in secure cookie
     console.log("🍪 Setting 'session' cookie in response headers...");
-    res.cookie("session", sessionToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/"
+    // Instead of setting a cookie, send the token directly in the JSON response
+
+    return res.json({
+      success: true,
+      token: sessionToken, // <--- Send token to frontend
+      user: {
+        name: user.name,
+        email: user.email,
+        picture: user.picture
+      }
     });
 
     console.log("🚀 Google sign-in flow completed successfully!");
