@@ -1,64 +1,314 @@
+
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const { OAuth2Client } = require("google-auth-library");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID
+);
 
-// ====== MongoDB Connection ======
+// ====== MIDDLEWARE ======
+
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN,
+  credentials: true
+}));
+
+app.use(express.json());
+app.use(cookieParser());
+
+// ====== ENVIRONMENT CHECK ======
+
+if (
+  !process.env.MONGO_URI ||
+  !process.env.GOOGLE_CLIENT_ID ||
+  !process.env.SESSION_SECRET ||
+  !process.env.FRONTEND_ORIGIN
+) {
+  throw new Error("Missing required environment variables!");
+}
+
+// ====== MONGODB CONNECTION ======
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection failed:", err));
 
-// ====== Mongoose Schema & Model ======
-const userKeySchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  keys: {
-    type: [String],
-    default: [null, null, null, null, null], // 5 slots
-  },
-  createdAt: { type: Date, default: Date.now },
-});
-const UserKey = mongoose.model("UserKey", userKeySchema);
 
-// ====== Message System ======
+// ==================================================
+// GOOGLE AUTHENTICATION
+// ==================================================
+
+// ====== GOOGLE USER MODEL ======
+
+const googleUserSchema = new mongoose.Schema({
+  googleId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  email: {
+    type: String,
+    required: true
+  },
+
+  name: String,
+  picture: String,
+
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const GoogleUser = mongoose.model(
+  "GoogleUser",
+  googleUserSchema
+);
+
+
+// ====== AUTHENTICATION MIDDLEWARE ======
+
+async function authenticate(req, res, next) {
+  try {
+    const token = req.cookies.session;
+
+    if (!token) {
+      return res.status(401).json({
+        error: "Not authenticated"
+      });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.SESSION_SECRET
+    );
+
+    const user = await GoogleUser.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(401).json({
+        error: "User not found"
+      });
+    }
+
+    req.user = user;
+
+    next();
+
+  } catch (err) {
+    return res.status(401).json({
+      error: "Invalid or expired session"
+    });
+  }
+}
+
+
+// ====== GOOGLE SIGN IN ======
+
+app.post("/auth/google", async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        error: "Google credential missing"
+      });
+    }
+
+    // Verify Google ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+
+    if (
+      !payload ||
+      !payload.sub ||
+      !payload.email ||
+      !payload.email_verified
+    ) {
+      return res.status(401).json({
+        error: "Invalid Google account"
+      });
+    }
+
+    // Find or create account
+    let user = await GoogleUser.findOne({
+      googleId: payload.sub
+    });
+
+    if (!user) {
+      user = await GoogleUser.create({
+        googleId: payload.sub,
+        email: payload.email,
+        name: payload.name,
+        picture: payload.picture
+      });
+
+      console.log("🆕 New Google user:", user.email);
+
+    } else {
+      user.email = payload.email;
+      user.name = payload.name;
+      user.picture = payload.picture;
+
+      await user.save();
+
+      console.log("👋 Returning user:", user.email);
+    }
+
+    // Generate session
+    const sessionToken = jwt.sign(
+      {
+        userId: user._id.toString()
+      },
+      process.env.SESSION_SECRET,
+      {
+        expiresIn: "7d"
+      }
+    );
+
+    // Store session in secure cookie
+    res.cookie("session", sessionToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/"
+    });
+
+    res.json({
+      success: true,
+      user: {
+        name: user.name,
+        email: user.email,
+        picture: user.picture
+      }
+    });
+
+  } catch (err) {
+    console.error("❌ Google sign-in error:", err);
+
+    res.status(401).json({
+      error: "Google authentication failed"
+    });
+  }
+});
+
+
+// ====== CHECK LOGIN ======
+
+app.get("/auth/me", authenticate, (req, res) => {
+  res.json({
+    authenticated: true,
+    user: {
+      name: req.user.name,
+      email: req.user.email,
+      picture: req.user.picture
+    }
+  });
+});
+
+
+// ====== LOGOUT ======
+
+app.post("/auth/logout", (req, res) => {
+  res.clearCookie("session", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/"
+  });
+
+  res.json({
+    success: true
+  });
+});
+
+
+// ==================================================
+// MESSAGE SYSTEM
+// ==================================================
+
 let latestMessage = "";
 let latestTimestamp = 0;
 
 app.post("/msg/send", (req, res) => {
   const { message } = req.body;
-  if (!message) return res.status(400).json({ error: "No message provided" });
+
+  if (!message) {
+    return res.status(400).json({
+      error: "No message provided"
+    });
+  }
 
   latestMessage = message;
   latestTimestamp = Date.now();
-  console.log(`💌 New broadcast at ${new Date(latestTimestamp).toISOString()}:`, message);
-  res.json({ status: "ok", message, timestamp: latestTimestamp });
+
+  console.log(
+    `💌 New broadcast at ${new Date(latestTimestamp).toISOString()}:`,
+    message
+  );
+
+  res.json({
+    status: "ok",
+    message,
+    timestamp: latestTimestamp
+  });
 });
 
 app.get("/msg/latest", (req, res) => {
-  res.json({ message: latestMessage, timestamp: latestTimestamp });
+  res.json({
+    message: latestMessage,
+    timestamp: latestTimestamp
+  });
 });
 
-// ====== Event System ======
+
+// ==================================================
+// EVENT SYSTEM
+// ==================================================
+
 let events = {};
 
 app.post("/api/setevent", (req, res) => {
   const { event, time, url, code } = req.body;
-  if (!event) return res.status(400).json({ error: "No event name provided" });
+
+  if (!event) {
+    return res.status(400).json({
+      error: "No event name provided"
+    });
+  }
 
   events[event] = {
     enabled: true,
     time: time || null,
     updated: Date.now(),
     url: url || null,
-    code: code || null,
+    code: code || null
   };
 
-  console.log(`🎉 Event set: ${event} ${url ? `(image: ${url})` : ""}`);
+  console.log(
+    `🎉 Event set: ${event} ${url ? `(image: ${url})` : ""}`
+  );
 
-  const duration = event === "custom-image" ? 5000 : event === "countdown" ? null : 60000;
+  const duration =
+    event === "custom-image"
+      ? 5000
+      : event === "countdown"
+        ? null
+        : 60000;
+
   if (duration) {
     setTimeout(() => {
       if (events[event]) {
@@ -68,91 +318,203 @@ app.post("/api/setevent", (req, res) => {
     }, duration);
   }
 
-  res.json({ status: "ok", event: events[event] });
+  res.json({
+    status: "ok",
+    event: events[event]
+  });
 });
 
-app.get("/api/events", (req, res) => res.json(events));
+app.get("/api/events", (req, res) => {
+  res.json(events);
+});
 
 app.post("/api/clearevents", (req, res) => {
   events = {};
+
   console.log("🛑 All events cleared");
-  res.json({ status: "ok", cleared: true });
+
+  res.json({
+    status: "ok",
+    cleared: true
+  });
 });
 
-// ====== Multiplayer Drawing ======
+
+// ==================================================
+// MULTIPLAYER DRAWING
+// ==================================================
+
 let drawingStrokes = [];
 
 app.post("/api/draw", (req, res) => {
   const { stroke } = req.body;
-  if (!stroke) return res.status(400).json({ error: "No stroke data provided" });
+
+  if (!stroke) {
+    return res.status(400).json({
+      error: "No stroke data provided"
+    });
+  }
 
   drawingStrokes.push(stroke);
-  if (drawingStrokes.length > 500) drawingStrokes.shift();
-  res.json({ status: "ok" });
+
+  if (drawingStrokes.length > 500) {
+    drawingStrokes.shift();
+  }
+
+  res.json({
+    status: "ok"
+  });
 });
 
-app.get("/api/draw", (req, res) => res.json(drawingStrokes));
+app.get("/api/draw", (req, res) => {
+  res.json(drawingStrokes);
+});
 
 app.post("/api/draw/clear", (req, res) => {
   drawingStrokes = [];
+
   console.log("🧹 Drawing canvas cleared");
-  res.json({ status: "ok", cleared: true });
+
+  res.json({
+    status: "ok",
+    cleared: true
+  });
 });
 
-// ====== 🔑 User API Key System (MongoDB) ======
-app.post("/api/saveKey", async (req, res) => {
-  const { username, key, index } = req.body;
 
-  if (!username || !key || index === undefined)
-    return res.status(400).json({ error: "Missing username, key or index" });
+// ==================================================
+// USER API KEY SYSTEM
+// ==================================================
 
-  if (index < 0 || index > 4)
-    return res.status(400).json({ error: "Invalid index (must be 0-4)" });
+const userKeySchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  keys: {
+    type: [String],
+    default: () => [null, null, null, null, null]
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const UserKey = mongoose.model("UserKey", userKeySchema);
+
+
+// ====== SAVE API KEY ======
+
+app.post("/api/saveKey", authenticate, async (req, res) => {
+  const { key, index } = req.body;
+
+  if (
+    typeof key !== "string" ||
+    !key.trim() ||
+    !Number.isInteger(index)
+  ) {
+    return res.status(400).json({
+      error: "Invalid key or index"
+    });
+  }
+
+  if (index < 0 || index > 4) {
+    return res.status(400).json({
+      error: "Invalid index (must be 0-4)"
+    });
+  }
 
   try {
-    let user = await UserKey.findOne({ username });
+    let user = await UserKey.findOne({
+      username: req.user.email
+    });
 
     if (!user) {
-      user = new UserKey({ username, keys: [null, null, null, null, null] });
+      user = new UserKey({
+        username: req.user.email,
+        keys: [null, null, null, null, null]
+      });
     }
 
-    user.keys[index] = key;
+    user.keys[index] = key.trim();
+
     await user.save();
 
-    console.log(`🔑 Saved key #${index + 1} for ${username}`);
-    res.json({ status: "ok", saved: true, keys: user.keys });
+    console.log(
+      `🔑 Saved key #${index + 1} for ${req.user.email}`
+    );
+
+    res.json({
+      status: "ok",
+      saved: true,
+      keys: user.keys
+    });
+
   } catch (err) {
     console.error("❌ Error saving key:", err);
-    res.status(500).json({ error: "Database error" });
+
+    res.status(500).json({
+      error: "Database error"
+    });
   }
 });
 
-app.get("/api/checkKey", async (req, res) => {
-  const { username } = req.query;
-  if (!username) return res.status(400).json({ error: "Username missing" });
 
+// ====== CHECK API KEYS ======
+
+app.get("/api/checkKey", authenticate, async (req, res) => {
   try {
-    const user = await UserKey.findOne({ username });
+    const user = await UserKey.findOne({
+      username: req.user.email
+    });
+
     res.json({
       hasKey: !!user,
-      keys: user?.keys || [null, null, null, null, null],
+      keys: user?.keys || [null, null, null, null, null]
     });
+
   } catch (err) {
     console.error("❌ Error checking key:", err);
-    res.status(500).json({ error: "Database error" });
+
+    res.status(500).json({
+      error: "Database error"
+    });
   }
 });
+
+
+// ==================================================
+// MONGODB TEST
+// ==================================================
 
 app.get("/api/testMongo", async (req, res) => {
   try {
     await mongoose.connection.db.admin().ping();
-    res.json({ status: "✅ MongoDB connected successfully!" });
+
+    res.json({
+      status: "✅ MongoDB connected successfully!"
+    });
+
   } catch (err) {
     console.error("❌ MongoDB ping error:", err);
-    res.status(500).json({ error: "MongoDB not connected" });
+
+    res.status(500).json({
+      error: "MongoDB not connected"
+    });
   }
 });
 
-// ====== Boot ======
+
+// ==================================================
+// SERVER BOOT
+// ==================================================
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
