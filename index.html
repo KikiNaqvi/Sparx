@@ -602,106 +602,243 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
-    // ————— Firebase Config —————
-    const firebaseConfig = {
-      apiKey: "AIzaSyAS-98Bz91JuQAtuOl_qsyPc7Jp1tuowOw",
-      authDomain: "hip-fuze-305914.firebaseapp.com",
-      projectId: "hip-fuze-305914",
-      storageBucket: "hip-fuze-305914.firebasestorage.app",
-      messagingSenderId: "454217699115",
-      appId: "1:454217699115:web:dbd50f2e564cf0e711ff6e",
-      measurementId: "G-R2VVQ168SP"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    
+// ==========================================
+// CONFIGURATION
+// ==========================================
 
-    // ————— Cache Helpers —————
-    const CACHE_KEY = 'sparxLoggedIn';
-    function setCache(flag) {
-      localStorage.setItem(CACHE_KEY, flag ? 'true' : 'false');
-    }
-    function isCached() {
-      return localStorage.getItem(CACHE_KEY) === 'true';
+const BACKEND_URL = "https://livemsg.onrender.com";
+
+const GOOGLE_CLIENT_ID =
+  "606571693941-fo9vk91k2v4215l6tr1jfb5aapvltu1d.apps.googleusercontent.com";
+
+// ==========================================
+// FIREBASE INITIALIZATION
+// ==========================================
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAS-98Bz91JuQAtuOl_qsyPc7Jp1tuowOw",
+  authDomain: "hip-fuze-305914.firebaseapp.com",
+  projectId: "hip-fuze-305914",
+  storageBucket: "hip-fuze-305914.firebasestorage.app",
+  messagingSenderId: "454217699115",
+  appId: "1:454217699115:web:dbd50f2e564cf0e711ff6e",
+  measurementId: "G-R2VVQ168SP"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+// ==========================================
+// CACHE
+// ==========================================
+
+const CACHE_KEY = "sparxLoggedIn";
+
+function setCache(flag) {
+  localStorage.setItem(CACHE_KEY, flag ? "true" : "false");
+}
+
+function isCached() {
+  return localStorage.getItem(CACHE_KEY) === "true";
+}
+
+// ==========================================
+// GOOGLE AUTHENTICATION
+// ==========================================
+
+// IMPORTANT: This must be globally accessible
+window.handleCredentialResponse = async function(response) {
+  try {
+    if (!response || !response.credential) {
+      throw new Error("Google did not return a credential.");
     }
 
-    // ————— On Load: auto‑redirect if already signed in —————
-    window.addEventListener('load', () => {
-      if (isCached() && auth.currentUser) {
-        // you’re still signed in — skip straight to dashboard
-        window.location.href = 'dashboard';
+    console.log("🔐 Google credential received");
+
+    const result = await fetch(
+      `${BACKEND_URL}/auth/google`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          credential: response.credential
+        })
       }
-    });
+    );
 
-    // Tab functionality
-  const tabs = document.querySelectorAll('nav button');
-  const sections = document.querySelectorAll('main section');
+    const data = await result.json();
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      // Remove active classes
-      tabs.forEach(t => t.classList.remove('active'));
-      sections.forEach(s => s.classList.remove('active'));
+    if (!result.ok || !data.success) {
+      throw new Error(data.error || "Authentication failed");
+    }
 
-      // Activate clicked tab & corresponding section
-      tab.classList.add('active');
-      const id = tab.id.replace('tab-', '');
-      document.getElementById(id).classList.add('active');
-    });
+    console.log("✅ Google authentication successful!");
+    console.log("👤 Logged in as:", data.user.email);
+
+    // Redirect to dashboard
+    window.location.assign("/dashboard");
+
+  } catch (error) {
+    console.error("❌ Google Sign-In Error:", error);
+    alert("Google Sign-In failed: " + error.message);
+  }
+};
+
+// ==========================================
+// CHECK EXISTING GOOGLE SESSION
+// ==========================================
+
+async function checkGoogleSession() {
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/auth/me`,
+      {
+        method: "GET",
+        credentials: "include"
+      }
+    );
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+
+    if (data.authenticated) {
+      console.log("✅ Existing Google session found");
+      window.location.replace("/dashboard");
+    }
+
+  } catch (error) {
+    console.error("Session check failed:", error);
+  }
+}
+
+// ==========================================
+// TAB FUNCTIONALITY
+// ==========================================
+
+const tabs = document.querySelectorAll("nav button");
+const sections = document.querySelectorAll("main section");
+
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("active"));
+    sections.forEach(s => s.classList.remove("active"));
+
+    tab.classList.add("active");
+
+    const id = tab.id.replace("tab-", "");
+
+    document.getElementById(id).classList.add("active");
   });
+});
 
-    const authForm      = document.getElementById('auth-form');
-    const toggleAuthBtn = document.getElementById('toggle-auth');
-    const usernameField = document.getElementById('username-field');
-    const authTitle     = document.getElementById('auth-title');
-    let isSignIn        = true;
+// ==========================================
+// EMAIL / PASSWORD AUTHENTICATION
+// ==========================================
 
-    toggleAuthBtn.addEventListener('click', () => {
-      isSignIn = !isSignIn;
-      if (isSignIn) {
-        authForm.querySelector('button[type="submit"]').textContent = 'Sign In';
-        toggleAuthBtn.textContent = 'Create an account';
-        usernameField.style.display = 'none';
-        authTitle.textContent = 'Sign In';
-      } else {
-        authForm.querySelector('button[type="submit"]').textContent = 'Create Account';
-        toggleAuthBtn.textContent = 'Already have an account? Sign In';
-        usernameField.style.display = 'flex';
-        authTitle.textContent = 'Create Account';
+const authForm = document.getElementById("auth-form");
+const toggleAuthBtn = document.getElementById("toggle-auth");
+const usernameField = document.getElementById("username-field");
+const authTitle = document.getElementById("auth-title");
+
+let isSignIn = true;
+
+toggleAuthBtn.addEventListener("click", () => {
+  isSignIn = !isSignIn;
+
+  if (isSignIn) {
+    authForm.querySelector('button[type="submit"]').textContent = "Sign In";
+
+    toggleAuthBtn.textContent = "Create an account";
+
+    usernameField.style.display = "none";
+
+    authTitle.textContent = "Sign In";
+
+  } else {
+    authForm.querySelector('button[type="submit"]').textContent = "Create Account";
+
+    toggleAuthBtn.textContent = "Already have an account? Sign In";
+
+    usernameField.style.display = "flex";
+
+    authTitle.textContent = "Create Account";
+  }
+});
+
+// ==========================================
+// EMAIL FORM SUBMISSION
+// ==========================================
+
+authForm.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const email = authForm.email.value;
+  const password = authForm.password.value;
+  const username = authForm.username.value;
+
+  try {
+    if (isSignIn) {
+
+      const { user } = await auth.signInWithEmailAndPassword(
+        email,
+        password
+      );
+
+      setCache(true);
+
+      window.location.assign("/dashboard");
+
+    } else {
+
+      const { user } = await auth.createUserWithEmailAndPassword(
+        email,
+        password
+      );
+
+      if (username) {
+        await user.updateProfile({
+          displayName: username
+        });
       }
-    });
 
-    authForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const email    = authForm.email.value;
-      const password = authForm.password.value;
-      const username = authForm.username.value;
+      await user.sendEmailVerification();
 
-      if (isSignIn) {
-        auth.signInWithEmailAndPassword(email, password)
-          .then(({ user }) => {
-            setCache(true);               // ← cache login
-            window.location.href = 'dashboard';
-          })
-          .catch(err => alert(`Error: ${err.message}`));
-      } else {
-        auth.createUserWithEmailAndPassword(email, password)
-          .then(({ user }) => {
-            if (username) user.updateProfile({ displayName: username });
-            return user.sendEmailVerification();
-          })
-          .then(() => {
-            alert(`Account created! Verification email sent. Please verify.`);
-            authForm.reset();
-            toggleAuthBtn.click();
-          })
-          .catch(err => alert(`Error: ${err.message}`));
-      }
-    });
+      alert("Account created! Verification email sent.");
 
-    // ————— Also clear cache on Firebase sign‑out (in case someone signs out elsewhere) —————
-    auth.onAuthStateChanged(user => {
-      if (!user) setCache(false);
-    });
+      authForm.reset();
+
+      toggleAuthBtn.click();
+    }
+
+  } catch (error) {
+    console.error("Authentication error:", error);
+    alert("Error: " + error.message);
+  }
+});
+
+// ==========================================
+// FIREBASE SESSION STATE
+// ==========================================
+
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    setCache(false);
+  } else if (isCached()) {
+    window.location.assign("/dashboard");
+  }
+});
+
+// ==========================================
+// INITIAL SESSION CHECK
+// ==========================================
+
+checkGoogleSession();
   </script>
 </body>
 </html>
