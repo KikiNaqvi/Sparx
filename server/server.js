@@ -114,69 +114,105 @@ async function authenticate(req, res, next) {
 }
 
 
-// ====== GOOGLE SIGN IN ROUTE ======
+// ====== GOOGLE SIGN IN (WITH DETAILED LOGS) ======
 app.post("/auth/google", async (req, res) => {
+  console.log("📥 Incoming POST /auth/google request received");
+  
   try {
     const { credential } = req.body;
+
     if (!credential) {
+      console.log("❌ Error: Google credential missing in request body");
       return res.status(400).json({ error: "Google credential missing" });
     }
 
+    console.log("🔍 Verifying Google ID token with Google API...");
+    // Verify Google ID token
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: process.env.GOOGLE_CLIENT_ID
     });
 
     const payload = ticket.getPayload();
-    if (!payload || !payload.sub || !payload.email) {
+    console.log("✅ Google token verified successfully for email:", payload?.email);
+
+    if (
+      !payload ||
+      !payload.sub ||
+      !payload.email ||
+      !payload.email_verified
+    ) {
+      console.log("❌ Error: Invalid Google payload or unverified email:", payload);
       return res.status(401).json({ error: "Invalid Google account" });
     }
 
-    // Find or create user in MongoDB
-    let user = await GoogleUser.findOne({ googleId: payload.sub });
+    console.log("🔍 Searching MongoDB for existing GoogleUser with googleId:", payload.sub);
+    // Find or create account
+    let user = await GoogleUser.findOne({
+      googleId: payload.sub
+    });
+
     if (!user) {
+      console.log("👤 User not found in MongoDB. Creating new user record...");
       user = await GoogleUser.create({
         googleId: payload.sub,
         email: payload.email,
         name: payload.name,
-        picture: payload.picture,
+        picture: payload.picture
       });
-      console.log("🆕 New Google user created:", user.email);
+
+      console.log("🆕 Successfully created new Google user in DB:", user.email);
+
     } else {
+      console.log("👋 Existing user found. Updating profile fields...");
       user.email = payload.email;
       user.name = payload.name;
       user.picture = payload.picture;
+
       await user.save();
-      console.log("👋 Returning Google user logged in:", user.email);
+      console.log("💾 Successfully updated returning user:", user.email);
     }
 
-    // Generate JWT session token
+    // Generate session
+    console.log("🔑 Generating JWT session token...");
     const sessionToken = jwt.sign(
-      { userId: user._id.toString() },
+      {
+        userId: user._id.toString()
+      },
       process.env.SESSION_SECRET,
-      { expiresIn: "7d" }
+      {
+        expiresIn: "7d"
+      }
     );
 
-    // Set the cookie that your authenticate middleware checks
+    // Store session in secure cookie
+    console.log("🍪 Setting 'session' cookie in response headers...");
     res.cookie("session", sessionToken, {
       httpOnly: true,
-      secure: true,     // Required for HTTPS on Render
-      sameSite: "none", // Required for cross-site cookie passing
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
+      path: "/"
     });
 
+    console.log("🚀 Google sign-in flow completed successfully!");
     return res.json({
       success: true,
       user: {
         name: user.name,
         email: user.email,
-        picture: user.picture,
-      },
+        picture: user.picture
+      }
     });
+
   } catch (err) {
-    console.error("❌ Google sign-in error:", err);
-    return res.status(401).json({ error: "Google authentication failed" });
+    console.error("❌ CRITICAL ERROR in /auth/google route:");
+    console.error("Error Message:", err.message);
+    console.error("Stack Trace:", err.stack);
+
+    return res.status(401).json({
+      error: "Google authentication failed: " + err.message
+    });
   }
 });
 
