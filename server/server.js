@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -8,7 +7,6 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 
-// REQUIRED on Render/Heroku/Cloudflare so secure cookies work properly behind a proxy
 app.set('trust proxy', 1);
 
 const googleClient = new OAuth2Client(
@@ -48,46 +46,38 @@ mongoose
 // GOOGLE AUTHENTICATION
 // ==================================================
 
-// ====== GOOGLE USER MODEL ======
-
 const googleUserSchema = new mongoose.Schema({
   googleId: {
     type: String,
     required: true,
     unique: true
   },
-
   email: {
     type: String,
     required: true
   },
-
   name: String,
   picture: String,
-
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-const GoogleUser = mongoose.model(
-  "GoogleUser",
-  googleUserSchema
-);
+const GoogleUser = mongoose.model("GoogleUser", googleUserSchema);
 
 
-// ====== AUTHENTICATION MIDDLEWARE ======
+// ====== AUTHENTICATION MIDDLEWARE (BEARER TOKEN) ======
 
 async function authenticate(req, res, next) {
   try {
-    const token = req.cookies.session;
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
-      return res.status(401).json({
-        error: "Not authenticated"
-      });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Not authenticated" });
     }
+
+    const token = authHeader.split(" ")[1];
 
     const decoded = jwt.verify(
       token,
@@ -97,44 +87,34 @@ async function authenticate(req, res, next) {
     const user = await GoogleUser.findById(decoded.userId);
 
     if (!user) {
-      return res.status(401).json({
-        error: "User not found"
-      });
+      return res.status(401).json({ error: "User not found" });
     }
 
     req.user = user;
-
     next();
 
   } catch (err) {
-    return res.status(401).json({
-      error: "Invalid or expired session"
-    });
+    return res.status(401).json({ error: "Invalid or expired session" });
   }
 }
 
 
-// ====== GOOGLE SIGN IN (WITH DETAILED LOGS) ======
+// ====== GOOGLE SIGN IN ======
+
 app.post("/auth/google", async (req, res) => {
-  console.log("📥 Incoming POST /auth/google request received");
-  
   try {
     const { credential } = req.body;
 
     if (!credential) {
-      console.log("❌ Error: Google credential missing in request body");
       return res.status(400).json({ error: "Google credential missing" });
     }
 
-    console.log("🔍 Verifying Google ID token with Google API...");
-    // Verify Google ID token
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID
     });
 
     const payload = ticket.getPayload();
-    console.log("✅ Google token verified successfully for email:", payload?.email);
 
     if (
       !payload ||
@@ -142,66 +122,36 @@ app.post("/auth/google", async (req, res) => {
       !payload.email ||
       !payload.email_verified
     ) {
-      console.log("❌ Error: Invalid Google payload or unverified email:", payload);
       return res.status(401).json({ error: "Invalid Google account" });
     }
 
-    console.log("🔍 Searching MongoDB for existing GoogleUser with googleId:", payload.sub);
-    // Find or create account
     let user = await GoogleUser.findOne({
       googleId: payload.sub
     });
 
     if (!user) {
-      console.log("👤 User not found in MongoDB. Creating new user record...");
       user = await GoogleUser.create({
         googleId: payload.sub,
         email: payload.email,
         name: payload.name,
         picture: payload.picture
       });
-
-      console.log("🆕 Successfully created new Google user in DB:", user.email);
-
     } else {
-      console.log("👋 Existing user found. Updating profile fields...");
       user.email = payload.email;
       user.name = payload.name;
       user.picture = payload.picture;
-
       await user.save();
-      console.log("💾 Successfully updated returning user:", user.email);
     }
 
-    // Generate session
-    console.log("🔑 Generating JWT session token...");
     const sessionToken = jwt.sign(
-      {
-        userId: user._id.toString()
-      },
+      { userId: user._id.toString() },
       process.env.SESSION_SECRET,
-      {
-        expiresIn: "7d"
-      }
+      { expiresIn: "7d" }
     );
 
-    // Store session in secure cookie
-    console.log("🍪 Setting 'session' cookie in response headers...");
-    // Instead of setting a cookie, send the token directly in the JSON response
-
     return res.json({
       success: true,
-      token: sessionToken, // <--- Send token to frontend
-      user: {
-        name: user.name,
-        email: user.email,
-        picture: user.picture
-      }
-    });
-
-    console.log("🚀 Google sign-in flow completed successfully!");
-    return res.json({
-      success: true,
+      token: sessionToken,
       user: {
         name: user.name,
         email: user.email,
@@ -210,10 +160,6 @@ app.post("/auth/google", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ CRITICAL ERROR in /auth/google route:");
-    console.error("Error Message:", err.message);
-    console.error("Stack Trace:", err.stack);
-
     return res.status(401).json({
       error: "Google authentication failed: " + err.message
     });
@@ -238,16 +184,7 @@ app.get("/auth/me", authenticate, (req, res) => {
 // ====== LOGOUT ======
 
 app.post("/auth/logout", (req, res) => {
-  res.clearCookie("session", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    path: "/"
-  });
-
-  res.json({
-    success: true
-  });
+  res.json({ success: true });
 });
 
 
@@ -262,18 +199,11 @@ app.post("/msg/send", (req, res) => {
   const { message } = req.body;
 
   if (!message) {
-    return res.status(400).json({
-      error: "No message provided"
-    });
+    return res.status(400).json({ error: "No message provided" });
   }
 
   latestMessage = message;
   latestTimestamp = Date.now();
-
-  console.log(
-    `💌 New broadcast at ${new Date(latestTimestamp).toISOString()}:`,
-    message
-  );
 
   res.json({
     status: "ok",
@@ -300,9 +230,7 @@ app.post("/api/setevent", (req, res) => {
   const { event, time, url, code } = req.body;
 
   if (!event) {
-    return res.status(400).json({
-      error: "No event name provided"
-    });
+    return res.status(400).json({ error: "No event name provided" });
   }
 
   events[event] = {
@@ -312,10 +240,6 @@ app.post("/api/setevent", (req, res) => {
     url: url || null,
     code: code || null
   };
-
-  console.log(
-    `🎉 Event set: ${event} ${url ? `(image: ${url})` : ""}`
-  );
 
   const duration =
     event === "custom-image"
@@ -328,7 +252,6 @@ app.post("/api/setevent", (req, res) => {
     setTimeout(() => {
       if (events[event]) {
         events[event].enabled = false;
-        console.log(`⏱️ Event automatically disabled: ${event}`);
       }
     }, duration);
   }
@@ -345,13 +268,7 @@ app.get("/api/events", (req, res) => {
 
 app.post("/api/clearevents", (req, res) => {
   events = {};
-
-  console.log("🛑 All events cleared");
-
-  res.json({
-    status: "ok",
-    cleared: true
-  });
+  res.json({ status: "ok", cleared: true });
 });
 
 
@@ -365,9 +282,7 @@ app.post("/api/draw", (req, res) => {
   const { stroke } = req.body;
 
   if (!stroke) {
-    return res.status(400).json({
-      error: "No stroke data provided"
-    });
+    return res.status(400).json({ error: "No stroke data provided" });
   }
 
   drawingStrokes.push(stroke);
@@ -376,9 +291,7 @@ app.post("/api/draw", (req, res) => {
     drawingStrokes.shift();
   }
 
-  res.json({
-    status: "ok"
-  });
+  res.json({ status: "ok" });
 });
 
 app.get("/api/draw", (req, res) => {
@@ -387,13 +300,7 @@ app.get("/api/draw", (req, res) => {
 
 app.post("/api/draw/clear", (req, res) => {
   drawingStrokes = [];
-
-  console.log("🧹 Drawing canvas cleared");
-
-  res.json({
-    status: "ok",
-    cleared: true
-  });
+  res.json({ status: "ok", cleared: true });
 });
 
 
@@ -407,12 +314,10 @@ const userKeySchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-
   keys: {
     type: [String],
     default: () => [null, null, null, null, null]
   },
-
   createdAt: {
     type: Date,
     default: Date.now
@@ -430,17 +335,11 @@ app.post("/api/saveKey", authenticate, async (req, res) => {
   if (
     typeof key !== "string" ||
     !key.trim() ||
-    !Number.isInteger(index)
+    !Number.isInteger(index) ||
+    index < 0 ||
+    index > 4
   ) {
-    return res.status(400).json({
-      error: "Invalid key or index"
-    });
-  }
-
-  if (index < 0 || index > 4) {
-    return res.status(400).json({
-      error: "Invalid index (must be 0-4)"
-    });
+    return res.status(400).json({ error: "Invalid key or index" });
   }
 
   try {
@@ -456,12 +355,7 @@ app.post("/api/saveKey", authenticate, async (req, res) => {
     }
 
     user.keys[index] = key.trim();
-
     await user.save();
-
-    console.log(
-      `🔑 Saved key #${index + 1} for ${req.user.email}`
-    );
 
     res.json({
       status: "ok",
@@ -470,11 +364,7 @@ app.post("/api/saveKey", authenticate, async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Error saving key:", err);
-
-    res.status(500).json({
-      error: "Database error"
-    });
+    res.status(500).json({ error: "Database error" });
   }
 });
 
@@ -493,11 +383,7 @@ app.get("/api/checkKey", authenticate, async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Error checking key:", err);
-
-    res.status(500).json({
-      error: "Database error"
-    });
+    res.status(500).json({ error: "Database error" });
   }
 });
 
@@ -509,17 +395,9 @@ app.get("/api/checkKey", authenticate, async (req, res) => {
 app.get("/api/testMongo", async (req, res) => {
   try {
     await mongoose.connection.db.admin().ping();
-
-    res.json({
-      status: "✅ MongoDB connected successfully!"
-    });
-
+    res.json({ status: "✅ MongoDB connected successfully!" });
   } catch (err) {
-    console.error("❌ MongoDB ping error:", err);
-
-    res.status(500).json({
-      error: "MongoDB not connected"
-    });
+    res.status(500).json({ error: "MongoDB not connected" });
   }
 });
 
