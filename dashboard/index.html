@@ -369,6 +369,17 @@ async function getGoogleSession() {
     }
   });
 
+  document.getElementById("btn-signout")?.addEventListener("click", async () => {
+  // Clear token locally
+  localStorage.removeItem("sparx_token");
+
+  // Optional: notify backend if you want to log server-side
+  await fetch(`${BACKEND_URL}/auth/logout`, { method: "POST" }).catch(() => {});
+
+  // Redirect to login page
+  window.location.replace("/");
+});
+
   // ==========================================
   // UPDATE PROFILE
   // ==========================================
